@@ -2,22 +2,17 @@ package frc.robot.devices;
 
 
 import com.revrobotics.*;
-import edu.wpi.first.units.Angle;
-import edu.wpi.first.units.Measure;
-import edu.wpi.first.units.Velocity;
-import frc.robot.Constants;
+import edu.wpi.first.units.*;
 
-import static edu.wpi.first.units.Units.RPM;
 
 public class Motor {
-    private static Constants.Motors.Motor definition;
-    private static Measure<Velocity<Angle>> rawVelocity;
+    private static MotorDefinition definition;
     private static Measure<Velocity<Angle>> velocity;
+    private static Measure<Voltage> voltage;
     private static CANSparkMax canSparkMax;
     private static SparkPIDController sparkPIDController;
-    private static RelativeEncoder encoder;
 
-    public Motor(Constants.Motors.Motor motor) {
+    public Motor(frc.robot.devices.MotorDefinition motor) {
         Motor.definition = motor;
 
         switch (definition.motorType) {
@@ -40,15 +35,23 @@ public class Motor {
         Motor.sparkPIDController.setFF(Motor.definition.FF);
     }
 
-    public void setRawVelocity(Measure<Velocity<Angle>> rawVelocity) {
-        Motor.rawVelocity = rawVelocity;
-        Motor.velocity = rawVelocity.divide(definition.gearing);
-        Motor.sparkPIDController.setReference(Motor.rawVelocity.in(RPM), CANSparkBase.ControlType.kVelocity);
+    public void setVelocity(Measure<Velocity<Angle>> velocity) {
+        Motor.voltage = null;
+        Motor.velocity = velocity;
+        Motor.sparkPIDController.setReference(Motor.velocity.in(Units.RPM), CANSparkBase.ControlType.kVelocity);
     }
 
-    public void setVelocity(Measure<Velocity<Angle>> velocity) {
-        Motor.velocity = velocity;
-        Motor.rawVelocity = velocity.times(definition.gearing);
-        Motor.sparkPIDController.setReference(rawVelocity.in(RPM), CANSparkBase.ControlType.kVelocity);
+    public void setVoltage(Measure<Voltage> voltage) {
+        Motor.velocity = null;
+        Motor.voltage = voltage;
+        Motor.canSparkMax.setVoltage(Motor.voltage.in(Units.Volts));
+    }
+
+    public RelativeEncoder getRelativeEncoder() {
+        return Motor.canSparkMax.getEncoder();
+    }
+
+    public AbsoluteEncoder getAbsoluteEncoder() {
+        return Motor.canSparkMax.getAbsoluteEncoder();
     }
 }

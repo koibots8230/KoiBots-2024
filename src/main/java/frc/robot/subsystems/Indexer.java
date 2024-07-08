@@ -9,8 +9,9 @@ import frc.robot.Constants;
 import frc.robot.devices.Motor;
 
 public class Indexer extends SubsystemBase {
-    private final static Indexer INSTANCE = new Indexer();
     private final Motor intakeMotor;
+
+    private final static Indexer INSTANCE = new Indexer();
 
     private Indexer() {
         intakeMotor = new Motor(Constants.Motors.Intake);
