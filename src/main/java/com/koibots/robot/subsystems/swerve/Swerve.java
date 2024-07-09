@@ -6,6 +6,7 @@ package com.koibots.robot.subsystems.swerve;
 import com.koibots.robot.Constants.ControlConstants;
 import com.koibots.robot.Constants.DeviceIDs;
 import com.koibots.robot.Constants.RobotConstants;
+import com.koibots.robot.Constants.VisionConstants;
 import com.koibots.robot.Robot;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -89,6 +90,8 @@ public class Swerve extends SubsystemBase {
             odometryUpdater.startPeriodic(1.0 / 200); // Run at 200hz
         }
 
+        odometry.setVisionMeasurementStdDevs(VisionConstants.STDEVS);
+
         xController =
                 new PIDController(
                         ControlConstants.VX_CONTROLLER.kP,
@@ -142,6 +145,7 @@ public class Swerve extends SubsystemBase {
     }
 
     public void addVisionMeasurement(Pose2d measurement, double timestamp) {
+        System.out.println("Swerve estimator side: " + measurement);
         odometry.addVisionMeasurement(measurement, NetworkTablesJNI.now());
     }
 

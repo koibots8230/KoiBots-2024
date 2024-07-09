@@ -14,10 +14,13 @@ import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.ReplanningConfig;
 import com.revrobotics.CANSparkBase.IdleMode;
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.numbers.*;
 import edu.wpi.first.units.*;
 import java.util.Arrays;
 import java.util.Hashtable;
@@ -256,7 +259,9 @@ public class Constants {
         public static final double[] VECTOR_DEFAULT_VALUE = {0, 0, 0};
         public static final int ID_DEFAULT_VALUE = 0;
 
-        public static final Measure<Distance> MAX_MEASUREMENT_DIFFERENCE = Meters.of(100);
+        public static final Measure<Distance> MAX_MEASUREMENT_DIFFERENCE = Meters.of(1);
+
+        public static final Matrix<N3, N1> STDEVS = VecBuilder.fill(0.1, 0.1, Math.PI);
     }
 
     public static class AutoConstants {

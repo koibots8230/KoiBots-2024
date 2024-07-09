@@ -19,11 +19,13 @@ import edu.wpi.first.networktables.DoubleArraySubscriber;
 import edu.wpi.first.networktables.IntegerSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.PubSubOption;
 import edu.wpi.first.networktables.TimestampedDoubleArray;
 import edu.wpi.first.networktables.TimestampedInteger;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -42,16 +44,29 @@ public class Vision extends SubsystemBase {
         for (int a = 0; a < 4; a++) {
             idSubscribers[a] =
                     table.getIntegerTopic(VisionConstants.TOPIC_NAMES[a][2])
-                            .subscribe(VisionConstants.ID_DEFAULT_VALUE);
+                            .subscribe(
+                                    VisionConstants.ID_DEFAULT_VALUE,
+                                    PubSubOption.pollStorage(10),
+                                    PubSubOption.sendAll(true),
+                                    PubSubOption.keepDuplicates(true));
+
             for (int b = 0; b < 2; b++) {
                 vecSubscribers[a][b] =
                         table.getDoubleArrayTopic(VisionConstants.TOPIC_NAMES[a][b])
-                                .subscribe(VisionConstants.VECTOR_DEFAULT_VALUE);
+                                .subscribe(
+                                        VisionConstants.VECTOR_DEFAULT_VALUE,
+                                        PubSubOption.pollStorage(10),
+                                        PubSubOption.sendAll(true),
+                                        PubSubOption.keepDuplicates(true));
             }
         }
-
         try {
-            layout = new AprilTagFieldLayout(Path.of(Filesystem.getDeployDirectory().getPath(), "apriltag", "2024-crescendo.json"));
+            layout =
+                    new AprilTagFieldLayout(
+                            Path.of(
+                                    Filesystem.getDeployDirectory().getPath(),
+                                    "apriltag",
+                                    "2024-crescendo.json"));
         } catch (IOException e) {
             System.err.println("ERROR: Could not find apriltag field layout!");
         }
@@ -85,8 +100,7 @@ public class Vision extends SubsystemBase {
 
         Pose2d camPose =
                 new Pose2d(
-                        layout.getTagPose(tagId).get().getX()
-                                + (hypotenuse * Math.cos(hypangle)),
+                        layout.getTagPose(tagId).get().getX() + (hypotenuse * Math.cos(hypangle)),
                         layout.getTagPose(tagId).get().getY() + (hypotenuse * Math.sin(hypangle)),
                         new Rotation2d());
 
@@ -100,7 +114,18 @@ public class Vision extends SubsystemBase {
                         + Swerve.get().getGyroAngle().getRadians()
                         + 90;
 
-        Rotation2d angle = new Rotation2d(Math.PI + VisionConstants.CAMERA_POSITIONS[camera].getRotation().getRadians() + layout.getTagPose(tagId).get().getRotation().getZ() + Math.atan2(-rotMatrix.get(2, 0), Math.sqrt(Math.pow(rotMatrix.get(2, 1), 2) + Math.pow(rotMatrix.get(2, 2), 2))));
+        Rotation2d angle =
+                new Rotation2d(
+                        Math.PI
+                                + VisionConstants.CAMERA_POSITIONS[camera]
+                                        .getRotation()
+                                        .getRadians()
+                                + layout.getTagPose(tagId).get().getRotation().getZ()
+                                + Math.atan2(
+                                        -rotMatrix.get(2, 0),
+                                        Math.sqrt(
+                                                Math.pow(rotMatrix.get(2, 1), 2)
+                                                        + Math.pow(rotMatrix.get(2, 2), 2))));
 
         return new Pose2d(
                 camPose.getX() + (hypotenuse * Math.cos(hypangle)),
@@ -110,24 +135,36 @@ public class Vision extends SubsystemBase {
 
     @Override
     public void periodic() {
-        for (int a = 0; a < 4; a++) {
-            TimestampedDoubleArray tvec = vecSubscribers[a][0].getAtomic();
-            TimestampedDoubleArray rvec = vecSubscribers[a][1].getAtomic();
-            TimestampedInteger ids = idSubscribers[a].getAtomic();
-            if (ids.timestamp != 0) {
-                Pose2d pose =
-                        translateToFieldPose(
-                                tvec.value, rvec.value, (int) ids.value, a);
-                if (pose.getY() > 0
-                        && pose.getY() < layout.getFieldWidth()
-                        && pose.getX() > 0
-                        && pose.getX() < layout.getFieldLength()
-                        && Math.abs(pose.getX() - Swerve.get().getEstimatedPose().getX())
-                               < VisionConstants.MAX_MEASUREMENT_DIFFERENCE.in(Meters)
-                        && Math.abs(pose.getY() - Swerve.get().getEstimatedPose().getY())
-                               < VisionConstants.MAX_MEASUREMENT_DIFFERENCE.in(Meters)
-                               ) {
-                    Swerve.get().addVisionMeasurement(pose, ids.timestamp); //TODO: Figure out why timestamp bad
+        for (int a = 0; a < 3; a++) {
+            TimestampedDoubleArray[] tvec = vecSubscribers[a][0].readQueue();
+            TimestampedDoubleArray[] rvec = vecSubscribers[a][1].readQueue();
+            TimestampedInteger[] ids = idSubscribers[a].readQueue();
+            if (tvec.length == 0 || rvec.length == 0 || ids.length == 0) {
+                continue;
+            }
+            for (int b = 0; b < tvec.length; b++) {
+                if (ids[b].value != 0) {
+                    Pose2d pose =
+                            translateToFieldPose(
+                                    tvec[b].value, rvec[b].value, (int) ids[b].value, a);
+                    System.out.println(pose);
+                    // format: off
+                    if (pose.getY() > 0
+                            && pose.getY() < layout.getFieldWidth()
+                            && pose.getX() > 0
+                            && pose.getX() < layout.getFieldLength()
+                            && Math.sqrt(
+                                    Math.pow(pose.getX() - Swerve.get().getEstimatedPose().getX(), 2)
+                                        + Math.pow(pose.getY()- Swerve.get().getEstimatedPose().getY(), 2))
+                                < ((RobotState.isDisabled())
+                                        ? 100
+                                        : VisionConstants.MAX_MEASUREMENT_DIFFERENCE.in(Meters))) {
+                        Swerve.get()
+                                .addVisionMeasurement(
+                                        pose,
+                                        tvec[b].timestamp);
+                    }
+                    // format: on
                 }
             }
         }
