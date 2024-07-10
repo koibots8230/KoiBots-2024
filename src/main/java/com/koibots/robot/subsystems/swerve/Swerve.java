@@ -17,10 +17,16 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.networktables.NetworkTablesJNI;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Time;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Notifier;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
+import static edu.wpi.first.units.Units.*;
+
 import org.littletonrobotics.junction.Logger;
 
 public class Swerve extends SubsystemBase {
@@ -144,9 +150,8 @@ public class Swerve extends SubsystemBase {
         // SmartDashboard.putData(field);
     }
 
-    public void addVisionMeasurement(Pose2d measurement, double timestamp) {
-        System.out.println("Swerve estimator side: " + measurement);
-        odometry.addVisionMeasurement(measurement, NetworkTablesJNI.now());
+    public void addVisionMeasurement(Pose2d measurement, Measure<Time> timestamp) {
+        odometry.addVisionMeasurement(measurement, timestamp.in(Seconds)); 
     }
 
     public void zeroGyro() {

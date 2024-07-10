@@ -5,6 +5,7 @@ package com.koibots.robot.subsystems.vision;
 
 import static com.koibots.robot.subsystems.Subsystems.Swerve;
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Microseconds;
 
 import com.koibots.robot.Constants.VisionConstants;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
@@ -29,6 +30,8 @@ import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Vision extends SubsystemBase {
 
@@ -37,11 +40,15 @@ public class Vision extends SubsystemBase {
 
     private AprilTagFieldLayout layout;
 
+    private ArrayList<TimestampedDoubleArray> tvecOverflow;
+    private ArrayList<TimestampedDoubleArray> rvecOverflow;
+    private ArrayList<TimestampedInteger> idsOverflow;
+
     public Vision() {
-        vecSubscribers = new DoubleArraySubscriber[4][2];
-        idSubscribers = new IntegerSubscriber[4];
+        vecSubscribers = new DoubleArraySubscriber[VisionConstants.ACTIVE_CAMERAS][2];
+        idSubscribers = new IntegerSubscriber[VisionConstants.ACTIVE_CAMERAS];
         NetworkTable table = NetworkTableInstance.getDefault().getTable("fisheye");
-        for (int a = 0; a < 4; a++) {
+        for (int a = 0; a < VisionConstants.ACTIVE_CAMERAS; a++) {
             idSubscribers[a] =
                     table.getIntegerTopic(VisionConstants.TOPIC_NAMES[a][2])
                             .subscribe(
@@ -103,7 +110,7 @@ public class Vision extends SubsystemBase {
                         layout.getTagPose(tagId).get().getX() + (hypotenuse * Math.cos(hypangle)),
                         layout.getTagPose(tagId).get().getY() + (hypotenuse * Math.sin(hypangle)),
                         new Rotation2d());
-
+                        
         hypotenuse =
                 Math.hypot(
                         VisionConstants.CAMERA_POSITIONS[camera].getX(),
@@ -135,19 +142,29 @@ public class Vision extends SubsystemBase {
 
     @Override
     public void periodic() {
-        for (int a = 0; a < 3; a++) {
+        for (int a = 0; a < VisionConstants.ACTIVE_CAMERAS; a++) {
             TimestampedDoubleArray[] tvec = vecSubscribers[a][0].readQueue();
             TimestampedDoubleArray[] rvec = vecSubscribers[a][1].readQueue();
             TimestampedInteger[] ids = idSubscribers[a].readQueue();
             if (tvec.length == 0 || rvec.length == 0 || ids.length == 0) {
                 continue;
             }
-            for (int b = 0; b < tvec.length; b++) {
-                if (ids[b].value != 0) {
+            while (!(tvec.length == rvec.length && rvec.length == ids.length)) {
+                if (tvec.length > rvec.length || tvec.length > ids.length) {
+                    tvec = Arrays.copyOf(tvec, tvec.length - 1);
+                }
+                if (rvec.length > tvec.length || rvec.length > ids.length) {
+                    rvec = Arrays.copyOf(rvec, rvec.length - 1);
+                }
+                if (ids.length > rvec.length || ids.length > tvec.length) {
+                    ids = Arrays.copyOf(ids, ids.length - 1);
+                }
+            }
+            for (int b = 0; b < ids.length; b++) {
+                if (ids[b].value != 0 && tvec[b].timestamp == rvec[b].timestamp && rvec[b].timestamp == ids[b].timestamp) {
                     Pose2d pose =
                             translateToFieldPose(
                                     tvec[b].value, rvec[b].value, (int) ids[b].value, a);
-                    System.out.println(pose);
                     // format: off
                     if (pose.getY() > 0
                             && pose.getY() < layout.getFieldWidth()
@@ -162,7 +179,7 @@ public class Vision extends SubsystemBase {
                         Swerve.get()
                                 .addVisionMeasurement(
                                         pose,
-                                        tvec[b].timestamp);
+                                        Microseconds.of(ids[b].serverTime));
                     }
                     // format: on
                 }
