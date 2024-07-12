@@ -8,16 +8,15 @@ import static edu.wpi.first.units.Units.*;
 
 import com.koibots.lib.controls.EightBitDo;
 import com.koibots.robot.Constants.*;
-import com.koibots.robot.autos.JankAutos;
 import com.koibots.robot.commands.Intake.IntakeCommand;
 import com.koibots.robot.commands.Intake.IntakeShooter;
 import com.koibots.robot.commands.Scoring.FeedNote;
+import com.koibots.robot.commands.Scoring.Shoot;
 import com.koibots.robot.commands.Shooter.SpinUpShooter;
 import com.koibots.robot.commands.Swerve.FieldOrientedDrive;
 import com.koibots.robot.commands.Swerve.TestDrive;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -28,10 +27,7 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 
 public class RobotContainer {
@@ -40,27 +36,10 @@ public class RobotContainer {
 
     List<SendableChooser<Boolean>> modulesEnabled = new ArrayList<>();
 
-    SendableChooser<Pose2d> startingPosition = new SendableChooser<>();
     SendableChooser<Command> autos = new SendableChooser<>();
 
     public RobotContainer() {
-
-        if (AutoConstants.IS_RED) {
-            AutoConstants.STARTING_POSITIONS.replace(
-                    "Subwoofer - Left", new Pose2d(0.668, 4.39, new Rotation2d(Math.PI / 3)));
-            AutoConstants.STARTING_POSITIONS.replace(
-                    "Subwoofer - Right", new Pose2d(0.668, 6.72, new Rotation2d(-Math.PI / 3)));
-
-            Pose2d temp = AutoConstants.SCORING_POSITIONS[0];
-            AutoConstants.SCORING_POSITIONS[0] = AutoConstants.SCORING_POSITIONS[2];
-            AutoConstants.SCORING_POSITIONS[2] = temp;
-
-            Translation2d tempNote = AutoConstants.NOTE_POSITIONS[0];
-            AutoConstants.NOTE_POSITIONS[0] = AutoConstants.NOTE_POSITIONS[2];
-            AutoConstants.NOTE_POSITIONS[2] = tempNote;
-        }
-
-        JankAutos jankAutos = new JankAutos();
+        registerAutos();
 
         for (int a = 0; a < 4; a++) {
             SendableChooser<Boolean> module = new SendableChooser<>();
@@ -72,38 +51,26 @@ public class RobotContainer {
 
             modulesEnabled.add(a, module);
         }
-        startingPosition.setDefaultOption("PLEASE INPUT!!", new Pose2d());
-        Enumeration<String> startingPosNames = AutoConstants.STARTING_POSITIONS.keys();
-        while (startingPosNames.hasMoreElements()) {
-            String key = startingPosNames.nextElement();
-            startingPosition.addOption(key, AutoConstants.STARTING_POSITIONS.get(key));
-        }
-
-        SmartDashboard.putData("Starting Pos", startingPosition);
-
-        Method[] autoOptions = jankAutos.getClass().getDeclaredMethods();
-        autos.setDefaultOption("Nothing", new InstantCommand());
-        for (Method autoOption : autoOptions) {
-            try {
-                autos.addOption(autoOption.getName(), (Command) autoOption.invoke(jankAutos));
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (IllegalArgumentException e) {
-                System.out.println(" >> " + autoOption.getName());
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            }
-        }
-        SmartDashboard.putData("Autos", autos);
     }
 
     public void registerAutos() {
+        NamedCommands.registerCommand("Shoot", new Shoot(SetpointConstants.SHOOTER_SPEEDS.SPEAKER.topSpeed, SetpointConstants.SHOOTER_SPEEDS.SPEAKER.bottomSpeed, false));
+        NamedCommands.registerCommand("Intake", new IntakeCommand(false));
+        NamedCommands.registerCommand("Score_Amp", new Shoot(SetpointConstants.SHOOTER_SPEEDS.AMP.topSpeed, SetpointConstants.SHOOTER_SPEEDS.AMP.bottomSpeed, false));
 
-        // autos.add(CalibX.command.get());
-        // autos.add(CalibY.command.get());
-        // autos.add(CalibTheta.command.get());
+        AutoBuilder.configureHolonomic(
+            Swerve.get()::getEstimatedPose,
+            Swerve.get()::resetOdometry,
+            Swerve.get()::getRelativeSpeeds,
+            Swerve.get()::driveRobotRelative,
+            ControlConstants.HOLONOMIC_CONFIG,
+            () -> false,
+            Swerve.get()
+        );
 
-        SmartDashboard.putString("Auto Routine", "0");
+        autos = AutoBuilder.buildAutoChooser();
+
+        SmartDashboard.putData("Autos", autos);
     }
 
     public void configureButtonBindings() {
@@ -242,7 +209,6 @@ public class RobotContainer {
     }
 
     public Command getAutonomousRoutine() {
-        Swerve.get().resetOdometry(startingPosition.getSelected());
         return autos.getSelected();
     }
 

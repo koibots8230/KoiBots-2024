@@ -146,16 +146,13 @@ public class Constants {
         public static final FeedforwardConstantsIO INDEXER_FEEDFORWARD_CONSTANTS =
                 new FeedforwardConstantsIO(0, 2.4, 0, .0021);
 
-        // =====================Autos=====================
+        // =====================Pathplanner=====================
 
-        public static final PIDConstantsIO VX_CONTROLLER = new PIDConstantsIO(1.5, 0, 0, 0, 0, 0);
-        public static final PIDConstantsIO VY_CONTROLLER = new PIDConstantsIO(0, 0, 0, 0, 0, 0);
-        public static final PIDConstantsIO VTHETA_CONTROLLER = new PIDConstantsIO(0, 0, 0, 0, 0, 0);
+        public static final PIDConstantsIO TRANSLATION_PID_CONSTANTS = new PIDConstantsIO(0, 0, 0, 0.4, 0, 0.22);
+        public static final PIDConstantsIO ROTATION_PID_CONSTANTS = new PIDConstantsIO(0, 0, 0, 0.0005, 0, 0);
 
-        // =====================Auto Align=====================
-
-        public static final Measure<Distance> REPLANNING_ERROR_THRESHOLD = Meters.of(1);
-        public static final Measure<Distance> REPLANNING_ERROR_SPIKE_THRESHOLD = Meters.of(1);
+        public static final Measure<Distance> REPLANNING_ERROR_THRESHOLD = Inches.of(1);
+        public static final Measure<Distance> REPLANNING_ERROR_SPIKE_THRESHOLD = Inches.of(4);
 
         public static final PathConstraints PATH_CONSTRAINTS =
                 new PathConstraints(
@@ -166,8 +163,8 @@ public class Constants {
 
         public static final HolonomicPathFollowerConfig HOLONOMIC_CONFIG =
                 new HolonomicPathFollowerConfig(
-                        DRIVE_PID_CONSTANTS,
-                        TURN_PID_CONSTANTS,
+                        TRANSLATION_PID_CONSTANTS,
+                        ROTATION_PID_CONSTANTS,
                         RobotConstants.MAX_LINEAR_SPEED.in(MetersPerSecond),
                         Math.sqrt(
                                 Math.pow(RobotConstants.ROBOT_LENGTH.in(Meters), 2)
