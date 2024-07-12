@@ -33,6 +33,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.littletonrobotics.junction.Logger;
+
 public class Vision extends SubsystemBase {
 
     private final DoubleArraySubscriber[][] vecSubscribers;
@@ -119,7 +121,7 @@ public class Vision extends SubsystemBase {
         hypangle =
                 VisionConstants.CAMERA_POSITIONS[camera].getRotation().getRadians()
                         + Swerve.get().getGyroAngle().getRadians()
-                        + 90;
+                        + (Math.PI/2);
 
         Rotation2d angle =
                 new Rotation2d(
@@ -176,10 +178,10 @@ public class Vision extends SubsystemBase {
                                 < ((RobotState.isDisabled())
                                         ? 100
                                         : VisionConstants.MAX_MEASUREMENT_DIFFERENCE.in(Meters))) {
-                        Swerve.get()
-                                .addVisionMeasurement(
-                                        pose,
-                                        Microseconds.of(ids[b].serverTime));
+                        // Swerve.get()
+                        //         .addVisionMeasurement(
+                        //                 pose,
+                        //                 Microseconds.of(ids[b].serverTime));
                     }
                     // format: on
                 }

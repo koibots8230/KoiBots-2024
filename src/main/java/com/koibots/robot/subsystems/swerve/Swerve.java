@@ -123,6 +123,7 @@ public class Swerve extends SubsystemBase {
     }
 
     public void addVisionMeasurement(Pose2d measurement, Measure<Time> timestamp) {
+        System.out.println(timestamp.in(Seconds));
         odometry.addVisionMeasurement(measurement, timestamp.in(Seconds)); 
     }
 

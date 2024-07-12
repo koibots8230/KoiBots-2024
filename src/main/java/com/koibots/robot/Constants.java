@@ -148,10 +148,10 @@ public class Constants {
 
         // =====================Pathplanner=====================
 
-        public static final PIDConstantsIO TRANSLATION_PID_CONSTANTS = new PIDConstantsIO(0, 0, 0, 0.4, 0, 0.22);
-        public static final PIDConstantsIO ROTATION_PID_CONSTANTS = new PIDConstantsIO(0, 0, 0, 0.0005, 0, 0);
+        public static final PIDConstantsIO TRANSLATION_PID_CONSTANTS = new PIDConstantsIO(4, 0, 0, 0.4, 0, 0.22);
+        public static final PIDConstantsIO ROTATION_PID_CONSTANTS = new PIDConstantsIO(5, 0, 0, 0.0005, 0, 0);
 
-        public static final Measure<Distance> REPLANNING_ERROR_THRESHOLD = Inches.of(1);
+        public static final Measure<Distance> REPLANNING_ERROR_THRESHOLD = Inches.of(6);
         public static final Measure<Distance> REPLANNING_ERROR_SPIKE_THRESHOLD = Inches.of(4);
 
         public static final PathConstraints PATH_CONSTRAINTS =
@@ -165,7 +165,7 @@ public class Constants {
                 new HolonomicPathFollowerConfig(
                         TRANSLATION_PID_CONSTANTS,
                         ROTATION_PID_CONSTANTS,
-                        RobotConstants.MAX_LINEAR_SPEED.in(MetersPerSecond),
+                        2,
                         Math.sqrt(
                                 Math.pow(RobotConstants.ROBOT_LENGTH.in(Meters), 2)
                                         + Math.pow(RobotConstants.ROBOT_WIDTH.in(Meters), 2)),
@@ -243,9 +243,9 @@ public class Constants {
         public static final int ACTIVE_CAMERAS = 3;
 
         public static final Pose2d[] CAMERA_POSITIONS = {
-            new Pose2d(0.26035, -0.1524, new Rotation2d(Math.toRadians(270))),
+            new Pose2d(-0.26035, -0.1524, new Rotation2d(Math.toRadians(90))),
             new Pose2d(0.0254, -0.1651, new Rotation2d(Math.toRadians(180))),
-            new Pose2d(-0.26035, -0.1524, new Rotation2d(Math.toRadians(90)))
+            new Pose2d(0.26035, -0.1524, new Rotation2d(Math.toRadians(270)))
         }; // x is left, y is forward, counterclockwise on rotation
 
         public static final String[][] TOPIC_NAMES = {
@@ -259,7 +259,7 @@ public class Constants {
 
         public static final Measure<Distance> MAX_MEASUREMENT_DIFFERENCE = Meters.of(1);
 
-        public static final Matrix<N3, N1> STDEVS = VecBuilder.fill(0.1, 0.1, Math.PI);
+        public static final Matrix<N3, N1> STDEVS = VecBuilder.fill(2,2, 50 * Math.PI);
     }
 
     public static class AutoConstants {

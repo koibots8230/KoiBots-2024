@@ -77,6 +77,7 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
 
         driveEncoder.setPosition(0.0);
         driveEncoder.setAverageDepth(SensorConstants.DRIVE_ENCODER_SAMPLING_DEPTH);
+        driveEncoder.setMeasurementPeriod(16);
     }
 
     @Override
