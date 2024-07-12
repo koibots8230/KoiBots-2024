@@ -89,26 +89,6 @@ public class Swerve extends SubsystemBase {
         }
 
         odometry.setVisionMeasurementStdDevs(VisionConstants.STDEVS);
-
-        xController =
-                new PIDController(
-                        ControlConstants.VX_CONTROLLER.kP,
-                        ControlConstants.VX_CONTROLLER.kI,
-                        ControlConstants.VX_CONTROLLER.kD);
-        yController =
-                new PIDController(
-                        ControlConstants.VY_CONTROLLER.kP,
-                        ControlConstants.VY_CONTROLLER.kI,
-                        ControlConstants.VY_CONTROLLER.kD);
-        thetaController =
-                new PIDController(
-                        ControlConstants.VTHETA_CONTROLLER.kP,
-                        ControlConstants.VTHETA_CONTROLLER.kI,
-                        ControlConstants.VTHETA_CONTROLLER.kD);
-
-        SmartDashboard.putData("X Controller", xController);
-        SmartDashboard.putData("Y Controller", yController);
-        SmartDashboard.putData("Theta Controller", thetaController);
     }
 
     @Override
