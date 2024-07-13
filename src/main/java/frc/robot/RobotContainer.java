@@ -7,33 +7,32 @@ package frc.robot;
 
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.GenericHID;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.Test;
 
 
 public class RobotContainer
 {
     private GenericHID controller;
+    private Test testSubsystem;
 
-    public RobotContainer()
+    public RobotContainer(boolean isReal)
     {
-        SmartDashboard.putNumber("/Test/1", 123.4);
+        controller = new GenericHID(0);
+        testSubsystem = new Test(isReal);
+        Constants.test(1);
         configureBindings();
     }
 
     private void configureBindings() {
-        controller = new GenericHID(0);
-        Trigger button1 = new Trigger(() -> controller.getRawButton(1));
-        button1.onTrue(new InstantCommand(() -> Test.getInstance().setMotor(Units.RPM.of(500))));
+        testSubsystem.setDefaultCommand(new InstantCommand(
+                () -> testSubsystem.setVelocity(Units.RPM.of(controller.getRawAxis(1) * 1000)),
+                testSubsystem));
     }
     
-    
-    public Command getAutonomousCommand()
-    {
+    public Command getAutonomousCommand() {
         return Commands.print("No autonomous command configured");
     }
 }

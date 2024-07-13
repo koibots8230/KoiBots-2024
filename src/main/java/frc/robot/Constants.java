@@ -1,6 +1,7 @@
 package frc.robot;
 
 import edu.wpi.first.units.*;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public final class Constants {
     public static final class Drivetrain {
@@ -30,6 +31,15 @@ public final class Constants {
         }
     }
 
+    public static final class TestSubsystem {
+        public static final int CANID = 1;
+        public static final double P = 0.0001;
+        public static final double I = 0;
+        public static final double D = 1;
+        public static final double FF = 0;
+        public static final double I_ZONE = 0;
+    }
+
     public static final class Operation {
         public static final boolean FIELD_ORIENTED = true;
     }
@@ -37,5 +47,13 @@ public final class Constants {
     public static final class Robot {
         public static final Measure<Distance> ROBOT_WIDTH = Units.Inches.of(21);
         public static final Measure<Distance> ROBOT_LENGTH = Units.Inches.of(21);
+    }
+
+    public static void test(int id) {
+        SmartDashboard.putString("Test/".concat(String.valueOf(id)), "^.^");
+    }
+
+    public static void test(int id, String text) {
+        SmartDashboard.putString("Test/".concat(String.valueOf(id)), text);
     }
 }

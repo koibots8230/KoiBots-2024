@@ -18,7 +18,10 @@ public class Robot extends TimedRobot
     
     
     @Override
-    public void robotInit() {}
+    public void robotInit() {
+        Constants.test(0);
+        robotContainer = new RobotContainer(isReal());
+    }
     
     
     @Override
@@ -45,10 +48,7 @@ public class Robot extends TimedRobot
     {
         autonomousCommand = robotContainer.getAutonomousCommand();
         
-        if (autonomousCommand != null)
-        {
-            autonomousCommand.schedule();
-        }
+        if (autonomousCommand != null) autonomousCommand.schedule();
     }
     
     
@@ -63,11 +63,7 @@ public class Robot extends TimedRobot
     @Override
     public void teleopInit()
     {
-        if (autonomousCommand != null)
-        {
-            autonomousCommand.cancel();
-        }
-
+        if (autonomousCommand != null) autonomousCommand.cancel();
     }
     
     
