@@ -5,14 +5,14 @@ import com.kauailabs.navx.frc.AHRS;
 import com.revrobotics.*;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.Units;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+
+import java.util.function.DoubleSupplier;
 
 public class Drivetrain extends SubsystemBase {
     private SwerveModule frontLeftModule;
@@ -29,15 +29,14 @@ public class Drivetrain extends SubsystemBase {
         //       Also, you can call addChild(name, sendableChild) to associate sendables with the subsystem
         //       such as SpeedControllers, Encoders, DigitalInputs, etc.
 
-        int moduleRotationOffset = 0;
         frontLeftModule = new SwerveModule(isReal, Constants.Drivetrain.Drive.ID_FRONT_LEFT,
-                Constants.Drivetrain.Turn.ID_FRONT_LEFT, Math.PI / 2 * 0 + moduleRotationOffset);
+                Constants.Drivetrain.Turn.ID_FRONT_LEFT);
         frontRightModule = new SwerveModule(isReal, Constants.Drivetrain.Drive.ID_FRONT_RIGHT,
-                Constants.Drivetrain.Turn.ID_FRONT_RIGHT, Math.PI / 2 * 1 + moduleRotationOffset);
+                Constants.Drivetrain.Turn.ID_FRONT_RIGHT);
         backLeftModule = new SwerveModule(isReal, Constants.Drivetrain.Drive.ID_BACK_LEFT,
-                Constants.Drivetrain.Turn.ID_BACK_LEFT, Math.PI / 2 * 3 + moduleRotationOffset);
+                Constants.Drivetrain.Turn.ID_BACK_LEFT);
         backRightModule = new SwerveModule(isReal, Constants.Drivetrain.Drive.ID_BACK_RIGHT,
-                Constants.Drivetrain.Turn.ID_BACK_RIGHT, Math.PI / 2 * 2 + moduleRotationOffset);
+                Constants.Drivetrain.Turn.ID_BACK_RIGHT);
 
         gyro = new AHRS();
         kinematics = new SwerveDriveKinematics(
@@ -46,7 +45,36 @@ public class Drivetrain extends SubsystemBase {
                 new Translation2d(Constants.Robot.ROBOT_LENGTH.divide(2), Constants.Robot.ROBOT_WIDTH.divide(-2)),
                 new Translation2d(Constants.Robot.ROBOT_LENGTH.divide(-2), Constants.Robot.ROBOT_WIDTH.divide(-2))
         );
-        odometry = new SwerveDriveOdometry();
+        odometry = new SwerveDriveOdometry(kinematics, new Rotation2d(), getModulePositions());
+
+        new Thread(() -> {
+            try {
+                Thread.sleep(1000);
+                zeroGyro();
+            } catch (Exception ignore) {}
+        }).start();
+    }
+
+    @Override
+    public void periodic() {
+        odometry.update(getYaw(), getModulePositions());
+    }
+
+    public Rotation2d getYaw() {
+        return Rotation2d.fromDegrees(gyro.getYaw());
+    }
+
+    public void zeroGyro() {
+        gyro.reset();
+    }
+
+    public SwerveModulePosition[] getModulePositions() {
+        return new SwerveModulePosition[] {
+                frontLeftModule.getPosition(),
+                frontRightModule.getPosition(),
+                backLeftModule.getPosition(),
+                backRightModule.getPosition()
+        };
     }
 
     private static class SwerveModule {
