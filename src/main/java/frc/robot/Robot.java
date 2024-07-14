@@ -5,6 +5,7 @@
 
 package frc.robot;
 
+import com.revrobotics.REVPhysicsSim;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -18,7 +19,6 @@ public class Robot extends TimedRobot {
 
     @Override
     public void robotInit() {
-        Constants.test(0);
         robotContainer = new RobotContainer(isReal());
     }
 
@@ -26,6 +26,7 @@ public class Robot extends TimedRobot {
     @Override
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
+        REVPhysicsSim.getInstance().run();
     }
 
 

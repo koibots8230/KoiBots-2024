@@ -10,24 +10,29 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Test;
 
 
 public class RobotContainer {
     private final GenericHID controller;
     private final Test testSubsystem;
+    private final Drivetrain drivetrain;
 
     public RobotContainer(boolean isReal) {
         controller = new GenericHID(0);
         testSubsystem = new Test(isReal);
-        Constants.test(1);
+        drivetrain = new Drivetrain(isReal);
         configureBindings();
     }
 
     private void configureBindings() {
-        testSubsystem.setDefaultCommand(new InstantCommand(
-                () -> testSubsystem.setVelocity(Units.RPM.of(controller.getRawAxis(1) * 1000)),
+        testSubsystem.setDefaultCommand(new InstantCommand(() ->
+                testSubsystem.setVelocity(Units.RPM.of(controller.getRawAxis(1) * 1000)),
                 testSubsystem));
+        drivetrain.setDefaultCommand(new InstantCommand(() ->
+                drivetrain.drive(controller.getRawAxis(0), controller.getRawAxis(1), controller.getRawAxis(2)),
+                drivetrain));
     }
 
     public Command getAutonomousCommand() {

@@ -7,12 +7,12 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.units.Units;
-import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-
-import java.util.function.DoubleSupplier;
 
 public class Drivetrain extends SubsystemBase {
     private SwerveModule frontLeftModule;
@@ -22,6 +22,8 @@ public class Drivetrain extends SubsystemBase {
     private SwerveDriveKinematics kinematics;
     private SwerveDriveOdometry odometry;
     private AHRS gyro;
+    private StructArrayPublisher<SwerveModuleState> publisherReal;
+    private StructArrayPublisher<SwerveModuleState> publisherSetpoint;
 
     public Drivetrain(boolean isReal) {
         // TODO: Set the default command, if any, for this subsystem by calling setDefaultCommand(command)
@@ -53,11 +55,17 @@ public class Drivetrain extends SubsystemBase {
                 zeroGyro();
             } catch (Exception ignore) {}
         }).start();
+
+        publisherReal = NetworkTableInstance.getDefault()
+                .getStructArrayTopic("/SwerveStatesReal", SwerveModuleState.struct).publish();
+        publisherSetpoint = NetworkTableInstance.getDefault()
+                .getStructArrayTopic("/SwerveStatesTarget", SwerveModuleState.struct).publish();
     }
 
     @Override
     public void periodic() {
         odometry.update(getYaw(), getModulePositions());
+        publisherReal.set(getModuleStates());
     }
 
     public Rotation2d getYaw() {
@@ -75,6 +83,28 @@ public class Drivetrain extends SubsystemBase {
                 backLeftModule.getPosition(),
                 backRightModule.getPosition()
         };
+    }
+
+    public SwerveModuleState[] getModuleStates() {
+        return new SwerveModuleState[] {
+                frontLeftModule.getState(),
+                frontRightModule.getState(),
+                backLeftModule.getState(),
+                backRightModule.getState()
+        };
+    }
+
+    public void drive(double x, double y, double r) {
+        SwerveModuleState[] states = kinematics.toSwerveModuleStates(new ChassisSpeeds(x, y, r));
+        frontLeftModule.setState(states[0]);
+        frontRightModule.setState(states[1]);
+        backLeftModule.setState(states[2]);
+        backRightModule.setState(states[3]);
+
+        SmartDashboard.putNumber("x", x);
+        SmartDashboard.putNumber("y", y);
+        SmartDashboard.putNumber("r", r);
+        publisherSetpoint.set(states);
     }
 
     private static class SwerveModule {

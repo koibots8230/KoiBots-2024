@@ -66,7 +66,7 @@ public final class Constants {
     }
 
     public static final class TestSubsystem {
-        public static final int CANID = 1;
+        public static final int CANID = 99;
         public static final double P = 0.0001;
         public static final double I = 0;
         public static final double D = 1;

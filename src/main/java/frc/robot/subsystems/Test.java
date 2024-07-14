@@ -23,7 +23,6 @@ public class Test extends SubsystemBase {
         //       Also, you can call addChild(name, sendableChild) to associate sendables with the subsystem
         //       such as SpeedControllers, Encoders, DigitalInputs, etc.
 
-        Constants.test(2, "test subsystem init start");
         this.isReal = isReal;
         testMotor = new CANSparkMax(Constants.TestSubsystem.CANID, CANSparkLowLevel.MotorType.kBrushless);
         if (!isReal) REVPhysicsSim.getInstance().addSparkMax(testMotor, DCMotor.getNEO(1));
