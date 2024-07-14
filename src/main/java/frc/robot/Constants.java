@@ -23,9 +23,11 @@ public final class Constants {
             public static final double I = 0;
             public static final double D = 1;
             public static final double FF = 0;
-            public static final double I_ZONE = 0;
-            public static final double GEARING = 5.08;
-            public static final Measure<Distance> WHEEL_DIAMETER = Units.Inches.of(3.0);
+            public static final double MIN_OUT = -1;
+            public static final double MAX_OUT = 1;
+            public static final CANSparkBase.IdleMode IDLE_MODE = CANSparkBase.IdleMode.kBrake;
+            public static final Measure<Current> CURRENT_LIMIT = Units.Amps.of(50);
+            public static final int PINION_TEETH = 14;
         }
 
         public static final class Turn {
@@ -36,18 +38,23 @@ public final class Constants {
             public static final double P = 0.0001;
             public static final double I = 0;
             public static final double D = 1;
-            public static final double S = 0;
+            public static final double FF = 0;
+            public static final double MIN_IN = 0;
+            public static final double MAX_IN = Module.TurnEncoderPositionFactor;
+            public static final double MIN_OUT = -1;
+            public static final double MAX_OUT = 1;
+            public static final CANSparkBase.IdleMode IDLE_MODE = CANSparkBase.IdleMode.kBrake;
+            public static final Measure<Current> CURRENT_LIMIT = Units.Amps.of(20);
+            public static final boolean INVERT = true;
         }
 
         public static final class Module { // Mayhaps stolen from REV :3
             // The MAXSwerve module can be configured with one of three pinion gears: 12T, 13T, or 14T.
             // This changes the drive speed of the module (a pinion gear with more teeth will result in a
             // robot that drives faster).
-            public static final int DriveMotorPinionTeeth = 14;
 
             // Invert the turning encoder, since the output shaft rotates in the opposite direction of
             // the steering motor in the MAXSwerve Module.
-            public static final boolean TurnEncoderInverted = true;
 
             // Calculations required for driving motor conversion factors and feed forward
             public static final double DriveMotorFreeSpeedRps = 5676.0 / 60;
@@ -64,27 +71,6 @@ public final class Constants {
                     / DriveMotorReduction) / 60.0; // meters per second
             public static final double TurnEncoderPositionFactor = (2 * Math.PI); // radians
             public static final double TurnEncoderVelocityFactor = (2 * Math.PI) / 60.0; // radians per second
-            public static final double TurnEncoderPositionPIDMinInput = 0; // radians
-            public static final double TurnEncoderPositionPIDMaxInput = TurnEncoderPositionFactor; // radians
-
-            public static final double DriveP = 0.04;
-            public static final double DriveI = 0;
-            public static final double DriveD = 0;
-            public static final double DriveMinOutput = -1;
-            public static final double DriveMaxOutput = 1;
-
-            public static final double TurnP = 1;
-            public static final double TurnI = 0;
-            public static final double TurnD = 0;
-            public static final double TurnFF = 0;
-            public static final double TurnMinOutput = -1;
-            public static final double TurnMaxOutput = 1;
-
-            public static final CANSparkBase.IdleMode DriveMotorIdleMode = CANSparkBase.IdleMode.kBrake;
-            public static final CANSparkBase.IdleMode TurnMotorIdleMode = CANSparkBase.IdleMode.kBrake;
-
-            public static final int DriveMotorCurrentLimit = 50;
-            public static final int TurnMotorCurrentLimit = 20;
         }
     }
 
