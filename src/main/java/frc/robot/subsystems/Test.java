@@ -37,6 +37,8 @@ public class Test extends SubsystemBase {
 
     public void setVelocity(Measure<Velocity<Angle>> velocity) {
         PIDController.setReference(velocity.in(Units.RPM), CANSparkBase.ControlType.kVelocity);
+        SmartDashboard.putNumber("Test/RealVelocity", relativeEncoder.getVelocity());
+        SmartDashboard.putNumber("Test/TargetVelocity", velocity.in(Units.RPM));
     }
 }
 

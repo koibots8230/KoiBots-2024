@@ -13,6 +13,7 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Robot;
 
 public class Drivetrain extends SubsystemBase {
     private SwerveModule frontLeftModule;
@@ -59,7 +60,7 @@ public class Drivetrain extends SubsystemBase {
         publisherReal = NetworkTableInstance.getDefault()
                 .getStructArrayTopic("/SwerveStatesReal", SwerveModuleState.struct).publish();
         publisherSetpoint = NetworkTableInstance.getDefault()
-                .getStructArrayTopic("/SwerveStatesTarget", SwerveModuleState.struct).publish();
+                .getStructArrayTopic("/SwerveStatesTargetUnoptimized", SwerveModuleState.struct).publish();
     }
 
     @Override
@@ -95,7 +96,7 @@ public class Drivetrain extends SubsystemBase {
     }
 
     public void drive(double x, double y, double r) {
-        SwerveModuleState[] states = kinematics.toSwerveModuleStates(new ChassisSpeeds(x, y, r));
+        SwerveModuleState[] states = kinematics.toSwerveModuleStates(new ChassisSpeeds(y, x, r));
         frontLeftModule.setState(states[0]);
         frontRightModule.setState(states[1]);
         backLeftModule.setState(states[2]);
@@ -105,6 +106,25 @@ public class Drivetrain extends SubsystemBase {
         SmartDashboard.putNumber("y", y);
         SmartDashboard.putNumber("r", r);
         publisherSetpoint.set(states);
+    }
+
+    public void setModule(SwerveModuleState state, SwerveModules module) {
+        SwerveModule selectedModule = switch (module) {
+            default -> frontLeftModule;
+            case frontRight -> frontRightModule;
+            case backLeft -> backLeftModule;
+            case backRight -> backRightModule;
+        };
+
+        selectedModule.setStateNoOptimize(state);
+        SmartDashboard.putNumber(module.toString(), SmartDashboard.getNumber(module.toString(), 0) + 1);
+    }
+
+    public enum SwerveModules {
+        frontLeft,
+        frontRight,
+        backLeft,
+        backRight
     }
 
     private static class SwerveModule {
