@@ -76,6 +76,8 @@ public final class Constants {
 
     public static final class Operation {
         public static final boolean FIELD_ORIENTED = true;
+        public static final double DEADBAND = 0.015;
+        public static final boolean DEADBAND_CENTER = true; //only apply deadband if both axis are near zero
     }
 
     public static final class Robot {

@@ -13,18 +13,17 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.Robot;
 
 public class Drivetrain extends SubsystemBase {
-    private SwerveModule frontLeftModule;
-    private SwerveModule frontRightModule;
-    private SwerveModule backLeftModule;
-    private SwerveModule backRightModule;
-    private SwerveDriveKinematics kinematics;
-    private SwerveDriveOdometry odometry;
-    private AHRS gyro;
-    private StructArrayPublisher<SwerveModuleState> publisherReal;
-    private StructArrayPublisher<SwerveModuleState> publisherSetpoint;
+    private final SwerveModule frontLeftModule;
+    private final SwerveModule frontRightModule;
+    private final SwerveModule backLeftModule;
+    private final SwerveModule backRightModule;
+    private final SwerveDriveKinematics kinematics;
+    private final SwerveDriveOdometry odometry;
+    private final AHRS gyro;
+    private final StructArrayPublisher<SwerveModuleState> publisherReal;
+    private final StructArrayPublisher<SwerveModuleState> publisherSetpoint;
 
     public Drivetrain(boolean isReal) {
         // TODO: Set the default command, if any, for this subsystem by calling setDefaultCommand(command)
@@ -96,7 +95,7 @@ public class Drivetrain extends SubsystemBase {
     }
 
     public void drive(double x, double y, double r) {
-        SwerveModuleState[] states = kinematics.toSwerveModuleStates(new ChassisSpeeds(y, x, r));
+        SwerveModuleState[] states = kinematics.toSwerveModuleStates(new ChassisSpeeds(y, -x, r));
         frontLeftModule.setState(states[0]);
         frontRightModule.setState(states[1]);
         backLeftModule.setState(states[2]);
@@ -109,15 +108,17 @@ public class Drivetrain extends SubsystemBase {
     }
 
     public void setModule(SwerveModuleState state, SwerveModules module) {
-        SwerveModule selectedModule = switch (module) {
+        getModule(module).setStateNoOptimize(state);
+        SmartDashboard.putNumber(module.toString(), SmartDashboard.getNumber(module.toString(), 0) + 1);
+    }
+
+    private SwerveModule getModule(SwerveModules module) {
+        return switch (module) {
             default -> frontLeftModule;
             case frontRight -> frontRightModule;
             case backLeft -> backLeftModule;
             case backRight -> backRightModule;
         };
-
-        selectedModule.setStateNoOptimize(state);
-        SmartDashboard.putNumber(module.toString(), SmartDashboard.getNumber(module.toString(), 0) + 1);
     }
 
     public enum SwerveModules {

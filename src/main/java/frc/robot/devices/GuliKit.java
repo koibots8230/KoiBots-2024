@@ -3,6 +3,7 @@ package frc.robot.devices;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants;
 
 public class GuliKit {
     public GenericHID controller;
@@ -47,10 +48,50 @@ public class GuliKit {
     public boolean getSelect() {return controller.getRawButton(10);}
     public boolean getLeftJSPress() {return controller.getRawButton(11);}
     public boolean getRightJSPress() {return controller.getRawButton(12);}
-    public double getLeftJSX() {return controller.getRawAxis(0);}
-    public double getLeftJSY() {return -controller.getRawAxis(1);}
-    public double getRightJSX() {return controller.getRawAxis(2);}
-    public double getRightJSY() {return -controller.getRawAxis(3);}
+    public double getLeftJSXRaw() {return controller.getRawAxis(0);}
+    public double getLeftJSYRaw() {return -controller.getRawAxis(1);}
+    public double getRightJSXRaw() {return controller.getRawAxis(2);}
+    public double getRightJSYRaw() {return -controller.getRawAxis(3);}
+    public double getLeftJSX() {
+        double axis = getLeftJSXRaw();
+        if (Constants.Operation.DEADBAND_CENTER) {
+            if (Math.abs(axis) < Constants.Operation.DEADBAND &&
+                    Math.abs(getLeftJSYRaw()) < Constants.Operation.DEADBAND) axis = 0;
+        } else {
+            if (Math.abs(axis) < Constants.Operation.DEADBAND) axis = 0;
+        }
+        return axis;
+    }
+    public double getLeftJSY() {
+        double axis = getLeftJSYRaw();
+        if (Constants.Operation.DEADBAND_CENTER) {
+            if (Math.abs(axis) < Constants.Operation.DEADBAND &&
+                    Math.abs(getLeftJSXRaw()) < Constants.Operation.DEADBAND) axis = 0;
+        } else {
+            if (Math.abs(axis) < Constants.Operation.DEADBAND) axis = 0;
+        }
+        return axis;
+    }
+    public double getRightJSX() {
+        double axis = getRightJSXRaw();
+        if (Constants.Operation.DEADBAND_CENTER) {
+            if (Math.abs(axis) < Constants.Operation.DEADBAND &&
+                    Math.abs(getRightJSYRaw()) < Constants.Operation.DEADBAND) axis = 0;
+        } else {
+            if (Math.abs(axis) < Constants.Operation.DEADBAND) axis = 0;
+        }
+        return axis;
+    }
+    public double getRightJSY() {
+        double axis = getRightJSYRaw();
+        if (Constants.Operation.DEADBAND_CENTER) {
+            if (Math.abs(axis) < Constants.Operation.DEADBAND &&
+                    Math.abs(getRightJSXRaw()) < Constants.Operation.DEADBAND) axis = 0;
+        } else {
+            if (Math.abs(axis) < Constants.Operation.DEADBAND) axis = 0;
+        }
+        return axis;
+    }
 
     public void updateDebug() {
         SmartDashboard.putBoolean("Controller/A", getA());
@@ -65,9 +106,13 @@ public class GuliKit {
         SmartDashboard.putBoolean("Controller/Select", getSelect());
         SmartDashboard.putBoolean("Controller/LJP", getLeftJSPress());
         SmartDashboard.putBoolean("Controller/RJP", getRightJSPress());
-        SmartDashboard.putNumber("Controller/LJX", getLeftJSX());
-        SmartDashboard.putNumber("Controller/LJY", getLeftJSY());
-        SmartDashboard.putNumber("Controller/RJX", getRightJSX());
-        SmartDashboard.putNumber("Controller/RJY", getRightJSY());
+        SmartDashboard.putNumber("Controller/LJX", getLeftJSXRaw());
+        SmartDashboard.putNumber("Controller/LJY", getLeftJSYRaw());
+        SmartDashboard.putNumber("Controller/RJX", getRightJSXRaw());
+        SmartDashboard.putNumber("Controller/RJY", getRightJSYRaw());
+        SmartDashboard.putNumber("Controller/LJXD", getLeftJSX());
+        SmartDashboard.putNumber("Controller/LJYD", getLeftJSY());
+        SmartDashboard.putNumber("Controller/RJXD", getRightJSX());
+        SmartDashboard.putNumber("Controller/RJYD", getRightJSY());
     }
 }
