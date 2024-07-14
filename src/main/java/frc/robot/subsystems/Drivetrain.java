@@ -72,10 +72,10 @@ public class Drivetrain extends SubsystemBase {
             turnEncoder = turnMotor.getAbsoluteEncoder(SparkAbsoluteEncoder.Type.kDutyCycle);
             driveController.setFeedbackDevice(driveEncoder);
             turnController.setFeedbackDevice(turnEncoder);
-            driveEncoder.setPositionConversionFactor(Constants.Drivetrain.Module.DriveEncoderPositionFactor);
-            turnEncoder.setPositionConversionFactor(Constants.Drivetrain.Module.TurnEncoderPositionFactor);
-            driveEncoder.setVelocityConversionFactor(Constants.Drivetrain.Module.DriveEncoderVelocityFactor);
-            turnEncoder.setVelocityConversionFactor(Constants.Drivetrain.Module.TurnEncoderVelocityFactor);
+            driveEncoder.setPositionConversionFactor(Constants.Drivetrain.Drive.ENCODER_POSITION_FACTOR);
+            turnEncoder.setPositionConversionFactor(Constants.Drivetrain.Turn.ENCODER_POSITION_FACTOR);
+            driveEncoder.setVelocityConversionFactor(Constants.Drivetrain.Drive.ENCODER_VELOCITY_FACTOR);
+            turnEncoder.setVelocityConversionFactor(Constants.Drivetrain.Turn.ENCODER_VELOCITY_FACTOR);
             turnEncoder.setInverted(Constants.Drivetrain.Turn.INVERT);
             turnController.setPositionPIDWrappingEnabled(true);
             turnController.setPositionPIDWrappingMinInput(Constants.Drivetrain.Turn.MIN_IN);
