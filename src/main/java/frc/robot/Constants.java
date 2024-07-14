@@ -39,51 +39,52 @@ public final class Constants {
             public static final double S = 0;
         }
 
-        public static final class Module {
+        public static final class Module { // Mayhaps stolen from REV :3
             // The MAXSwerve module can be configured with one of three pinion gears: 12T, 13T, or 14T.
             // This changes the drive speed of the module (a pinion gear with more teeth will result in a
             // robot that drives faster).
-            public static final int DrivingMotorPinionTeeth = 14;
+            public static final int DriveMotorPinionTeeth = 14;
 
             // Invert the turning encoder, since the output shaft rotates in the opposite direction of
             // the steering motor in the MAXSwerve Module.
-            public static final boolean TurningEncoderInverted = true;
+            public static final boolean TurnEncoderInverted = true;
 
             // Calculations required for driving motor conversion factors and feed forward
-            public static final double DrivingMotorFreeSpeedRps = 5676.0 / 60;
+            public static final double DriveMotorFreeSpeedRps = 5676.0 / 60;
             public static final double WheelDiameterMeters = 0.0762;
             public static final double WheelCircumferenceMeters = WheelDiameterMeters * Math.PI;
             // 45 teeth on the wheel's bevel gear, 22 teeth on the first-stage spur gear, 15 teeth on the bevel pinion
-            public static final double DrivingMotorReduction = (45.0 * 22) / (DrivingMotorPinionTeeth * 15);
-            public static final double DriveWheelFreeSpeedRps = (DrivingMotorFreeSpeedRps * WheelCircumferenceMeters)
-                    / DrivingMotorReduction;
-            public static final double DrivingFF = 1 / DriveWheelFreeSpeedRps;
-            public static final double DrivingEncoderPositionFactor = (WheelDiameterMeters * Math.PI)
-                    / DrivingMotorReduction; // meters
-            public static final double DrivingEncoderVelocityFactor = ((WheelDiameterMeters * Math.PI)
-                    / DrivingMotorReduction) / 60.0; // meters per second
-            public static final double TurningEncoderPositionFactor = (2 * Math.PI); // radians
-            public static final double TurningEncoderVelocityFactor = (2 * Math.PI) / 60.0; // radians per second
-            public static final double TurningEncoderPositionPIDMinInput = 0; // radians
-            public static final double TurningEncoderPositionPIDMaxInput = TurningEncoderPositionFactor; // radians
-            public static final double DrivingP = 0.04;
-            public static final double DrivingI = 0;
-            public static final double DrivingD = 0;
-            public static final double DrivingMinOutput = -1;
-            public static final double DrivingMaxOutput = 1;
+            public static final double DriveMotorReduction = (45.0 * 22) / (DriveMotorPinionTeeth * 15);
+            public static final double DriveWheelFreeSpeedRps = (DriveMotorFreeSpeedRps * WheelCircumferenceMeters)
+                    / DriveMotorReduction;
+            public static final double DriveFF = 1 / DriveWheelFreeSpeedRps;
+            public static final double DriveEncoderPositionFactor = (WheelDiameterMeters * Math.PI)
+                    / DriveMotorReduction; // meters
+            public static final double DriveEncoderVelocityFactor = ((WheelDiameterMeters * Math.PI)
+                    / DriveMotorReduction) / 60.0; // meters per second
+            public static final double TurnEncoderPositionFactor = (2 * Math.PI); // radians
+            public static final double TurnEncoderVelocityFactor = (2 * Math.PI) / 60.0; // radians per second
+            public static final double TurnEncoderPositionPIDMinInput = 0; // radians
+            public static final double TurnEncoderPositionPIDMaxInput = TurnEncoderPositionFactor; // radians
 
-            public static final double TurningP = 1;
-            public static final double TurningI = 0;
-            public static final double TurningD = 0;
-            public static final double TurningFF = 0;
-            public static final double TurningMinOutput = -1;
-            public static final double TurningMaxOutput = 1;
+            public static final double DriveP = 0.04;
+            public static final double DriveI = 0;
+            public static final double DriveD = 0;
+            public static final double DriveMinOutput = -1;
+            public static final double DriveMaxOutput = 1;
 
-            public static final CANSparkBase.IdleMode DrivingMotorIdleMode = CANSparkBase.IdleMode.kBrake;
-            public static final CANSparkBase.IdleMode TurningMotorIdleMode = CANSparkBase.IdleMode.kBrake;
+            public static final double TurnP = 1;
+            public static final double TurnI = 0;
+            public static final double TurnD = 0;
+            public static final double TurnFF = 0;
+            public static final double TurnMinOutput = -1;
+            public static final double TurnMaxOutput = 1;
 
-            public static final int DrivingMotorCurrentLimit = 50; // amps
-            public static final int TurningMotorCurrentLimit = 20; // amps
+            public static final CANSparkBase.IdleMode DriveMotorIdleMode = CANSparkBase.IdleMode.kBrake;
+            public static final CANSparkBase.IdleMode TurnMotorIdleMode = CANSparkBase.IdleMode.kBrake;
+
+            public static final int DriveMotorCurrentLimit = 50;
+            public static final int TurnMotorCurrentLimit = 20;
         }
     }
 
