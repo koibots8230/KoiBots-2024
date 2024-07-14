@@ -9,7 +9,10 @@ import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
+import edu.wpi.first.units.Distance;
+import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
+import edu.wpi.first.units.Velocity;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -57,9 +60,9 @@ public class Drivetrain extends SubsystemBase {
         }).start();
 
         publisherReal = NetworkTableInstance.getDefault()
-                .getStructArrayTopic("/SwerveStatesReal", SwerveModuleState.struct).publish();
+                .getStructArrayTopic("/Swerve/State", SwerveModuleState.struct).publish();
         publisherSetpoint = NetworkTableInstance.getDefault()
-                .getStructArrayTopic("/SwerveStatesTargetUnoptimized", SwerveModuleState.struct).publish();
+                .getStructArrayTopic("/Swerve/TargetUnoptimized", SwerveModuleState.struct).publish();
     }
 
     @Override
@@ -129,60 +132,84 @@ public class Drivetrain extends SubsystemBase {
     }
 
     private static class SwerveModule {
-        private CANSparkMax driveMotor;
-        private CANSparkMax turnMotor;
-        private SparkPIDController driveController;
-        private SparkPIDController turnController;
-        private RelativeEncoder driveEncoder;
-        private AbsoluteEncoder turnEncoder;
+        private final CANSparkMax driveMotor;
+        private final CANSparkMax turnMotor;
+        private final SparkPIDController driveController;
+        private final SparkPIDController turnController;
+        private final RelativeEncoder driveEncoder;
+        private final AbsoluteEncoder turnEncoder;
+        private final RelativeEncoder turnEncoderSim;
+        private final boolean isReal;
 
         public SwerveModule(boolean isReal, int driveCANID, int turnCANID) {
+            this.isReal = isReal;
             driveMotor = new CANSparkMax(driveCANID, CANSparkLowLevel.MotorType.kBrushless);
             turnMotor = new CANSparkMax(turnCANID, CANSparkLowLevel.MotorType.kBrushless);
             if (isReal) {
                 REVPhysicsSim.getInstance().addSparkMax(driveMotor, DCMotor.getNEO(1));
                 REVPhysicsSim.getInstance().addSparkMax(turnMotor, DCMotor.getNEO(1));
             }
+
             driveMotor.restoreFactoryDefaults();
-            turnMotor.restoreFactoryDefaults();
             driveController = driveMotor.getPIDController();
-            turnController = turnMotor.getPIDController();
             driveEncoder = driveMotor.getEncoder();
-            turnEncoder = turnMotor.getAbsoluteEncoder(SparkAbsoluteEncoder.Type.kDutyCycle);
             driveController.setFeedbackDevice(driveEncoder);
-            turnController.setFeedbackDevice(turnEncoder);
             driveEncoder.setPositionConversionFactor(Constants.Drivetrain.Drive.ENCODER_POSITION_FACTOR);
-            turnEncoder.setPositionConversionFactor(Constants.Drivetrain.Turn.ENCODER_POSITION_FACTOR);
             driveEncoder.setVelocityConversionFactor(Constants.Drivetrain.Drive.ENCODER_VELOCITY_FACTOR);
-            turnEncoder.setVelocityConversionFactor(Constants.Drivetrain.Turn.ENCODER_VELOCITY_FACTOR);
-            turnEncoder.setInverted(Constants.Drivetrain.Turn.INVERT);
-            turnController.setPositionPIDWrappingEnabled(true);
-            turnController.setPositionPIDWrappingMinInput(Constants.Drivetrain.Turn.MIN_IN);
-            turnController.setPositionPIDWrappingMaxInput(Constants.Drivetrain.Turn.MAX_IN);
             driveController.setP(Constants.Drivetrain.Drive.P);
             driveController.setI(Constants.Drivetrain.Drive.I);
             driveController.setD(Constants.Drivetrain.Drive.D);
             driveController.setFF(Constants.Drivetrain.Drive.FF);
             driveController.setOutputRange(Constants.Drivetrain.Drive.MIN_OUT, Constants.Drivetrain.Drive.MAX_OUT);
+            driveMotor.setIdleMode(Constants.Drivetrain.Drive.IDLE_MODE);
+            driveMotor.setSmartCurrentLimit((int) Constants.Drivetrain.Drive.CURRENT_LIMIT.in(Units.Amps));
+            driveMotor.burnFlash();
+
+            turnMotor.restoreFactoryDefaults();
+            turnController = turnMotor.getPIDController();
+            turnEncoder = turnMotor.getAbsoluteEncoder(SparkAbsoluteEncoder.Type.kDutyCycle);
+            turnController.setFeedbackDevice(turnEncoder);
+            turnEncoder.setPositionConversionFactor(Constants.Drivetrain.Turn.ENCODER_POSITION_FACTOR);
+            turnEncoder.setVelocityConversionFactor(Constants.Drivetrain.Turn.ENCODER_VELOCITY_FACTOR);
+            turnEncoder.setInverted(Constants.Drivetrain.Turn.INVERT);
+            turnController.setPositionPIDWrappingEnabled(true);
+            turnController.setPositionPIDWrappingMinInput(Constants.Drivetrain.Turn.MIN_IN);
+            turnController.setPositionPIDWrappingMaxInput(Constants.Drivetrain.Turn.MAX_IN);
             turnController.setP(Constants.Drivetrain.Turn.P);
             turnController.setI(Constants.Drivetrain.Turn.I);
             turnController.setD(Constants.Drivetrain.Turn.D);
             turnController.setFF(Constants.Drivetrain.Turn.FF);
             turnController.setOutputRange(Constants.Drivetrain.Turn.MIN_OUT, Constants.Drivetrain.Turn.MAX_OUT);
-            driveMotor.setIdleMode(Constants.Drivetrain.Drive.IDLE_MODE);
             turnMotor.setIdleMode(Constants.Drivetrain.Turn.IDLE_MODE);
-            driveMotor.setSmartCurrentLimit((int) Constants.Drivetrain.Drive.CURRENT_LIMIT.in(Units.Amps));
             turnMotor.setSmartCurrentLimit((int) Constants.Drivetrain.Turn.CURRENT_LIMIT.in(Units.Amps));
-            driveMotor.burnFlash();
             turnMotor.burnFlash();
+
+            turnEncoderSim = turnMotor.getEncoder();
+            turnController.setFeedbackDevice(turnEncoderSim);
+            turnEncoderSim.setPositionConversionFactor(Constants.Drivetrain.Turn.ENCODER_POSITION_FACTOR);
+            turnEncoderSim.setVelocityConversionFactor(Constants.Drivetrain.Turn.ENCODER_VELOCITY_FACTOR);
+            turnEncoder.setInverted(Constants.Drivetrain.Turn.INVERT);
+        }
+
+        public Rotation2d getAngle() {
+            if (isReal) return new Rotation2d(turnEncoder.getPosition());
+            else return new Rotation2d(turnEncoderSim.getPosition());
+        }
+
+        public Measure<Distance> getDistance() {
+            return Units.Meters.of(driveEncoder.getPosition());
+        }
+
+        public Measure<Velocity<Distance>> getVelocity() {
+            return Units.MetersPerSecond.of(driveEncoder.getVelocity());
         }
 
         public SwerveModuleState getState() {
-            return new SwerveModuleState(driveEncoder.getVelocity(), new Rotation2d(turnEncoder.getPosition()));
+            return new SwerveModuleState(getVelocity(), getAngle());
         }
 
         public SwerveModulePosition getPosition() {
-            return new SwerveModulePosition(driveEncoder.getPosition(), new Rotation2d(turnEncoder.getPosition()));
+            return new SwerveModulePosition(getDistance(), getAngle());
         }
 
         public void setStateNoOptimize(SwerveModuleState state) {
@@ -192,15 +219,16 @@ public class Drivetrain extends SubsystemBase {
 
         public void setState(SwerveModuleState state) {
             SwerveModuleState optimizedState =
-                    SwerveModuleState.optimize(state, new Rotation2d(turnEncoder.getPosition()));
+                    SwerveModuleState.optimize(state, getAngle());
             optimizedState.speedMetersPerSecond *=
-                    optimizedState.angle.minus(new Rotation2d(turnEncoder.getPosition())).getCos();
+                    optimizedState.angle.minus(getAngle()).getCos();
+            setStateNoOptimize(state);
         }
-
 
         public void zeroTurnEncoder() {
             turnEncoder.setZeroOffset(0);
             turnEncoder.setZeroOffset(turnEncoder.getPosition());
+            turnEncoderSim.setPosition(0);
         }
     }
 }
