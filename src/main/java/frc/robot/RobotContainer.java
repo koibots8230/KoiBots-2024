@@ -13,13 +13,11 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.subsystems.Test;
 
 
-public class RobotContainer
-{
-    private GenericHID controller;
-    private Test testSubsystem;
+public class RobotContainer {
+    private final GenericHID controller;
+    private final Test testSubsystem;
 
-    public RobotContainer(boolean isReal)
-    {
+    public RobotContainer(boolean isReal) {
         controller = new GenericHID(0);
         testSubsystem = new Test(isReal);
         Constants.test(1);
@@ -31,7 +29,7 @@ public class RobotContainer
                 () -> testSubsystem.setVelocity(Units.RPM.of(controller.getRawAxis(1) * 1000)),
                 testSubsystem));
     }
-    
+
     public Command getAutonomousCommand() {
         return Commands.print("No autonomous command configured");
     }

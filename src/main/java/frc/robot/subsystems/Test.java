@@ -12,10 +12,10 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
 public class Test extends SubsystemBase {
-    private boolean isReal;
-    private CANSparkMax testMotor;
-    private SparkPIDController PIDController;
-    private RelativeEncoder relativeEncoder;
+    private final boolean isReal;
+    private final CANSparkMax testMotor;
+    private final SparkPIDController PIDController;
+    private final RelativeEncoder relativeEncoder;
 
     public Test(boolean isReal) {
         // TODO: Set the default command, if any, for this subsystem by calling setDefaultCommand(command)

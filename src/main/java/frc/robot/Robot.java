@@ -10,82 +10,86 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
-public class Robot extends TimedRobot
-{
+public class Robot extends TimedRobot {
     private Command autonomousCommand;
-    
+
     private RobotContainer robotContainer;
-    
-    
+
+
     @Override
     public void robotInit() {
         Constants.test(0);
         robotContainer = new RobotContainer(isReal());
     }
-    
-    
+
+
     @Override
-    public void robotPeriodic()
-    {
+    public void robotPeriodic() {
         CommandScheduler.getInstance().run();
     }
-    
-    
+
+
     @Override
-    public void disabledInit() {}
-    
-    
+    public void disabledInit() {
+    }
+
+
     @Override
-    public void disabledPeriodic() {}
-    
-    
+    public void disabledPeriodic() {
+    }
+
+
     @Override
-    public void disabledExit() {}
-    
-    
+    public void disabledExit() {
+    }
+
+
     @Override
-    public void autonomousInit()
-    {
+    public void autonomousInit() {
         autonomousCommand = robotContainer.getAutonomousCommand();
-        
+
         if (autonomousCommand != null) autonomousCommand.schedule();
     }
-    
-    
+
+
     @Override
-    public void autonomousPeriodic() {}
-    
-    
+    public void autonomousPeriodic() {
+    }
+
+
     @Override
-    public void autonomousExit() {}
-    
-    
+    public void autonomousExit() {
+    }
+
+
     @Override
-    public void teleopInit()
-    {
+    public void teleopInit() {
         if (autonomousCommand != null) autonomousCommand.cancel();
     }
-    
-    
+
+
     @Override
-    public void teleopPeriodic() {}
-    
-    
+    public void teleopPeriodic() {
+    }
+
+
     @Override
-    public void teleopExit() {}
-    
-    
+    public void teleopExit() {
+    }
+
+
     @Override
-    public void testInit()
-    {
+    public void testInit() {
         CommandScheduler.getInstance().cancelAll();
     }
-    
-    
+
+
     @Override
-    public void testPeriodic() {}
-    
-    
+    public void testPeriodic() {
+    }
+
+
     @Override
-    public void testExit() {}
+    public void testExit() {
+    }
 }
