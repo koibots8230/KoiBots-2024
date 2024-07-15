@@ -3,12 +3,7 @@
 
 package com.koibots.robot.commands.Swerve;
 
-import static com.koibots.robot.subsystems.Subsystems.Swerve;
-import static edu.wpi.first.units.Units.*;
-
 import com.koibots.robot.Constants.ControlConstants;
-import com.pathplanner.lib.commands.PathfindHolonomic;
-import com.pathplanner.lib.commands.PathfindThenFollowPathHolonomic;
 import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -19,20 +14,20 @@ import java.util.List;
 
 public class AutoAlign extends Command {
 
-    private final Command pathfindingCommand;
+    private Command pathfindingCommand;
 
     public AutoAlign(Pose2d targetPose, Measure<Distance> rotationDelay) {
-        pathfindingCommand =
-                new PathfindHolonomic(
-                        targetPose,
-                        ControlConstants.PATH_CONSTRAINTS,
-                        0.0,
-                        Swerve.get()::getEstimatedPose,
-                        Swerve.get()::getRelativeSpeeds,
-                        Swerve.get()::driveRobotRelative,
-                        ControlConstants.HOLONOMIC_CONFIG,
-                        rotationDelay.in(Meters),
-                        Swerve.get());
+        // pathfindingCommand =
+        //         new PathfindHolonomic(
+        //                 targetPose,
+        //                 ControlConstants.PATH_CONSTRAINTS,
+        //                 0.0,
+        //                 Swerve.get()::getEstimatedPose,
+        //                 Swerve.get()::getRelativeSpeeds,
+        //                 Swerve.get()::driveRobotRelative,
+        //                 ControlConstants.HOLONOMIC_CONFIG,
+        //                 rotationDelay.in(Meters),
+        //                 Swerve.get());
     }
 
     public AutoAlign(
@@ -48,17 +43,17 @@ public class AutoAlign extends Command {
                         new GoalEndState(0, targetPose.getRotation()));
         path.preventFlipping = true;
 
-        pathfindingCommand =
-                new PathfindThenFollowPathHolonomic(
-                        path,
-                        ControlConstants.PATH_CONSTRAINTS,
-                        Swerve.get()::getEstimatedPose,
-                        Swerve.get()::getRelativeSpeeds,
-                        Swerve.get()::driveRobotRelative,
-                        ControlConstants.HOLONOMIC_CONFIG,
-                        rotationDelay.in(Meters),
-                        () -> false,
-                        Swerve.get());
+        // pathfindingCommand =
+        //         new PathfindThenFollowPathHolonomic(
+        //                 path,
+        //                 ControlConstants.PATH_CONSTRAINTS,
+        //                 Swerve.get()::getEstimatedPose,
+        //                 Swerve.get()::getRelativeSpeeds,
+        //                 Swerve.get()::driveRobotRelative,
+        //                 ControlConstants.HOLONOMIC_CONFIG,
+        //                 rotationDelay.in(Meters),
+        //                 () -> false,
+        //                 Swerve.get());
     }
 
     @Override

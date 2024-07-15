@@ -11,8 +11,6 @@ import com.koibots.lib.util.FeedforwardConstantsIO;
 import com.koibots.lib.util.MotorConstantsIO;
 import com.koibots.lib.util.PIDConstantsIO;
 import com.pathplanner.lib.path.PathConstraints;
-import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
-import com.pathplanner.lib.util.ReplanningConfig;
 import com.revrobotics.CANSparkBase.IdleMode;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
@@ -148,8 +146,9 @@ public class Constants {
 
         // =====================Pathplanner=====================
 
-        public static final PIDConstantsIO TRANSLATION_PID_CONSTANTS = new PIDConstantsIO(4, 0, 0, 0.4, 0, 0.22);
-        public static final PIDConstantsIO ROTATION_PID_CONSTANTS = new PIDConstantsIO(5, 0, 0, 0.0005, 0, 0);
+        public static final PIDConstantsIO X_PID_CONSTANTS = new PIDConstantsIO(1.65, 0, 0, 0, 0, 0);
+        public static final PIDConstantsIO Y_PID_CONSTANTS = new PIDConstantsIO(1.5, 0, 0, 0, 0, 0);
+        public static final PIDConstantsIO ROTATION_PID_CONSTANTS = new PIDConstantsIO(1.35, 0, 0, 0.0005, 0, 0);
 
         public static final Measure<Distance> REPLANNING_ERROR_THRESHOLD = Inches.of(6);
         public static final Measure<Distance> REPLANNING_ERROR_SPIKE_THRESHOLD = Inches.of(4);
@@ -161,19 +160,19 @@ public class Constants {
                         RobotConstants.MAX_ANGULAR_VELOCITY.in(RadiansPerSecond),
                         RobotConstants.MAX_ANGULAR_ACCELERATION.in(RadiansPerSecond.per(Second)));
 
-        public static final HolonomicPathFollowerConfig HOLONOMIC_CONFIG =
-                new HolonomicPathFollowerConfig(
-                        TRANSLATION_PID_CONSTANTS,
-                        ROTATION_PID_CONSTANTS,
-                        2,
-                        Math.sqrt(
-                                Math.pow(RobotConstants.ROBOT_LENGTH.in(Meters), 2)
-                                        + Math.pow(RobotConstants.ROBOT_WIDTH.in(Meters), 2)),
-                        new ReplanningConfig(
-                                false,
-                                true,
-                                REPLANNING_ERROR_THRESHOLD.in(Meters),
-                                REPLANNING_ERROR_SPIKE_THRESHOLD.in(Meters)));
+        // public static final HolonomicPathFollowerConfig HOLONOMIC_CONFIG =
+        //         new HolonomicPathFollowerConfig(
+        //                 TRANSLATION_PID_CONSTANTS,
+        //                 ROTATION_PID_CONSTANTS,
+        //                 2,
+        //                 Math.sqrt(
+        //                         Math.pow(RobotConstants.ROBOT_LENGTH.in(Meters), 2)
+        //                                 + Math.pow(RobotConstants.ROBOT_WIDTH.in(Meters), 2)),
+        //                 new ReplanningConfig(
+        //                         false,
+        //                         false,
+        //                         REPLANNING_ERROR_THRESHOLD.in(Meters),
+        //                         REPLANNING_ERROR_SPIKE_THRESHOLD.in(Meters)));
 
         public static final Measure<Distance> ALLOWED_AUTO_ERROR = Inches.of(10);
     }
@@ -216,7 +215,7 @@ public class Constants {
         public static final Measure<Velocity<Angle>> MAX_ANGULAR_VELOCITY =
                 RadiansPerSecond.of(2 * PI);
         public static final Measure<Velocity<Velocity<Distance>>> MAX_LINEAR_ACCELERATION =
-                MetersPerSecondPerSecond.of(4);
+                MetersPerSecondPerSecond.of(2.25);
         public static final Measure<Velocity<Velocity<Angle>>> MAX_ANGULAR_ACCELERATION =
                 RadiansPerSecond.of(4 * Math.PI).per(Second);
 

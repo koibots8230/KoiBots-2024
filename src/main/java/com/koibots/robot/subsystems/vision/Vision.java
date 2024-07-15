@@ -42,10 +42,6 @@ public class Vision extends SubsystemBase {
 
     private AprilTagFieldLayout layout;
 
-    private ArrayList<TimestampedDoubleArray> tvecOverflow;
-    private ArrayList<TimestampedDoubleArray> rvecOverflow;
-    private ArrayList<TimestampedInteger> idsOverflow;
-
     public Vision() {
         vecSubscribers = new DoubleArraySubscriber[VisionConstants.ACTIVE_CAMERAS][2];
         idSubscribers = new IntegerSubscriber[VisionConstants.ACTIVE_CAMERAS];
@@ -100,12 +96,12 @@ public class Vision extends SubsystemBase {
                 count++;
             }
         }
-
-        double hypotenuse = Math.hypot(translation[0], translation[2]);
+        tagId = 5;
+        double hypotenuse = Math.hypot(translation[0], translation[1]);
 
         double hypangle =
                 layout.getTagPose(tagId).get().getRotation().toRotation2d().getRadians()
-                        - Math.atan(translation[0] / translation[2]);
+                        - Math.atan(translation[0] / translation[1]);
 
         Pose2d camPose =
                 new Pose2d(
@@ -164,6 +160,7 @@ public class Vision extends SubsystemBase {
             }
             for (int b = 0; b < ids.length; b++) {
                 if (ids[b].value != 0 && tvec[b].timestamp == rvec[b].timestamp && rvec[b].timestamp == ids[b].timestamp) {
+                    System.out.println(tvec[b].value[0] + ", " + tvec[b].value[1] + ", " + tvec[b].value[2]);
                     Pose2d pose =
                             translateToFieldPose(
                                     tvec[b].value, rvec[b].value, (int) ids[b].value, a);
@@ -178,10 +175,10 @@ public class Vision extends SubsystemBase {
                                 < ((RobotState.isDisabled())
                                         ? 100
                                         : VisionConstants.MAX_MEASUREMENT_DIFFERENCE.in(Meters))) {
-                        // Swerve.get()
-                        //         .addVisionMeasurement(
-                        //                 pose,
-                        //                 Microseconds.of(ids[b].serverTime));
+                        Swerve.get()
+                                .addVisionMeasurement(
+                                        pose,
+                                        Microseconds.of(ids[b].serverTime));
                     }
                     // format: on
                 }
