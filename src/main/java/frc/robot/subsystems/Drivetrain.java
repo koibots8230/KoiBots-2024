@@ -145,55 +145,77 @@ public class Drivetrain extends SubsystemBase {
             this.isReal = isReal;
             driveMotor = new CANSparkMax(driveCANID, CANSparkLowLevel.MotorType.kBrushless);
             turnMotor = new CANSparkMax(turnCANID, CANSparkLowLevel.MotorType.kBrushless);
+            driveMotor.restoreFactoryDefaults();
+            turnMotor.restoreFactoryDefaults();
             if (isReal) {
                 REVPhysicsSim.getInstance().addSparkMax(driveMotor, DCMotor.getNEO(1));
-                REVPhysicsSim.getInstance().addSparkMax(turnMotor, DCMotor.getNEO(1));
+                REVPhysicsSim.getInstance().addSparkMax(turnMotor, DCMotor.getNeo550(1));
             }
 
-            driveMotor.restoreFactoryDefaults();
+//            driveMotor.restoreFactoryDefaults();
+//            driveController = driveMotor.getPIDController();
+//            driveEncoder = driveMotor.getEncoder();
+//            driveController.setFeedbackDevice(driveEncoder);
+//            driveEncoder.setPositionConversionFactor(Constants.Drivetrain.Drive.ENCODER_POSITION_FACTOR);
+//            driveEncoder.setVelocityConversionFactor(Constants.Drivetrain.Drive.ENCODER_VELOCITY_FACTOR);
+//            driveController.setP(Constants.Drivetrain.Drive.P);
+//            driveController.setI(Constants.Drivetrain.Drive.I);
+//            driveController.setD(Constants.Drivetrain.Drive.D);
+//            driveController.setFF(Constants.Drivetrain.Drive.FF);
+//            driveController.setOutputRange(Constants.Drivetrain.Drive.MIN_OUT, Constants.Drivetrain.Drive.MAX_OUT);
+//            driveMotor.setIdleMode(Constants.Drivetrain.Drive.IDLE_MODE);
+//            driveMotor.setSmartCurrentLimit((int) Constants.Drivetrain.Drive.CURRENT_LIMIT.in(Units.Amps));
+//            driveMotor.burnFlash();
+
+//            turnMotor.restoreFactoryDefaults();
+//            turnController = turnMotor.getPIDController();
+//            turnEncoder = turnMotor.getAbsoluteEncoder();
+//            if (isReal) turnController.setFeedbackDevice(turnEncoder);
+//            turnEncoder.setPositionConversionFactor(Constants.Drivetrain.Turn.ENCODER_POSITION_FACTOR);
+//            turnEncoder.setVelocityConversionFactor(Constants.Drivetrain.Turn.ENCODER_VELOCITY_FACTOR);
+//            turnEncoder.setInverted(Constants.Drivetrain.Turn.INVERT);
+//            turnController.setPositionPIDWrappingEnabled(true);
+//            turnController.setPositionPIDWrappingMinInput(Constants.Drivetrain.Turn.MIN_IN);
+//            turnController.setPositionPIDWrappingMaxInput(Constants.Drivetrain.Turn.MAX_IN);
+//            turnController.setP(Constants.Drivetrain.Turn.P);
+//            turnController.setI(Constants.Drivetrain.Turn.I);
+//            turnController.setD(Constants.Drivetrain.Turn.D);
+//            turnController.setFF(Constants.Drivetrain.Turn.FF);
+//            turnController.setOutputRange(Constants.Drivetrain.Turn.MIN_OUT, Constants.Drivetrain.Turn.MAX_OUT);
+//            turnMotor.setIdleMode(Constants.Drivetrain.Turn.IDLE_MODE);
+//            turnMotor.setSmartCurrentLimit((int) Constants.Drivetrain.Turn.CURRENT_LIMIT.in(Units.Amps));
+//            turnMotor.burnFlash();
+
+//            turnEncoderSim = turnMotor.getEncoder();
+//            if (!isReal) turnController.setFeedbackDevice(turnEncoderSim);
+//            turnEncoderSim.setPositionConversionFactor(Constants.Drivetrain.Turn.ENCODER_POSITION_FACTOR);
+//            turnEncoderSim.setVelocityConversionFactor(Constants.Drivetrain.Turn.ENCODER_VELOCITY_FACTOR);
+//            turnEncoder.setInverted(Constants.Drivetrain.Turn.INVERT);
+
             driveController = driveMotor.getPIDController();
-            driveEncoder = driveMotor.getEncoder();
-            driveController.setFeedbackDevice(driveEncoder);
-            driveEncoder.setPositionConversionFactor(Constants.Drivetrain.Drive.ENCODER_POSITION_FACTOR);
-            driveEncoder.setVelocityConversionFactor(Constants.Drivetrain.Drive.ENCODER_VELOCITY_FACTOR);
             driveController.setP(Constants.Drivetrain.Drive.P);
             driveController.setI(Constants.Drivetrain.Drive.I);
             driveController.setD(Constants.Drivetrain.Drive.D);
             driveController.setFF(Constants.Drivetrain.Drive.FF);
-            driveController.setOutputRange(Constants.Drivetrain.Drive.MIN_OUT, Constants.Drivetrain.Drive.MAX_OUT);
-            driveMotor.setIdleMode(Constants.Drivetrain.Drive.IDLE_MODE);
-            driveMotor.setSmartCurrentLimit((int) Constants.Drivetrain.Drive.CURRENT_LIMIT.in(Units.Amps));
-            driveMotor.burnFlash();
+            driveEncoder = driveMotor.getEncoder();
 
-            turnMotor.restoreFactoryDefaults();
             turnController = turnMotor.getPIDController();
-            turnEncoder = turnMotor.getAbsoluteEncoder(SparkAbsoluteEncoder.Type.kDutyCycle);
-            turnController.setFeedbackDevice(turnEncoder);
-            turnEncoder.setPositionConversionFactor(Constants.Drivetrain.Turn.ENCODER_POSITION_FACTOR);
-            turnEncoder.setVelocityConversionFactor(Constants.Drivetrain.Turn.ENCODER_VELOCITY_FACTOR);
-            turnEncoder.setInverted(Constants.Drivetrain.Turn.INVERT);
-            turnController.setPositionPIDWrappingEnabled(true);
-            turnController.setPositionPIDWrappingMinInput(Constants.Drivetrain.Turn.MIN_IN);
-            turnController.setPositionPIDWrappingMaxInput(Constants.Drivetrain.Turn.MAX_IN);
             turnController.setP(Constants.Drivetrain.Turn.P);
             turnController.setI(Constants.Drivetrain.Turn.I);
             turnController.setD(Constants.Drivetrain.Turn.D);
             turnController.setFF(Constants.Drivetrain.Turn.FF);
-            turnController.setOutputRange(Constants.Drivetrain.Turn.MIN_OUT, Constants.Drivetrain.Turn.MAX_OUT);
-            turnMotor.setIdleMode(Constants.Drivetrain.Turn.IDLE_MODE);
-            turnMotor.setSmartCurrentLimit((int) Constants.Drivetrain.Turn.CURRENT_LIMIT.in(Units.Amps));
-            turnMotor.burnFlash();
-
             turnEncoderSim = turnMotor.getEncoder();
-            turnController.setFeedbackDevice(turnEncoderSim);
-            turnEncoderSim.setPositionConversionFactor(Constants.Drivetrain.Turn.ENCODER_POSITION_FACTOR);
-            turnEncoderSim.setVelocityConversionFactor(Constants.Drivetrain.Turn.ENCODER_VELOCITY_FACTOR);
-            turnEncoder.setInverted(Constants.Drivetrain.Turn.INVERT);
+
+            turnEncoder = turnMotor.getAbsoluteEncoder();
+
+            driveMotor.burnFlash();
+            turnMotor.burnFlash();
         }
 
         public Rotation2d getAngle() {
-            if (isReal) return new Rotation2d(turnEncoder.getPosition());
-            else return new Rotation2d(turnEncoderSim.getPosition());
+//            if (isReal) return new Rotation2d(turnEncoder.getPosition());
+//            else return new Rotation2d(turnEncoderSim.getPosition());
+            return new Rotation2d(turnEncoderSim.getPosition());
         }
 
         public Measure<Distance> getDistance() {

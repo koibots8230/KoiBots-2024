@@ -30,9 +30,9 @@ public class RobotContainer {
     }
 
     private void configureBindings() {
-        testSubsystem.setDefaultCommand(new InstantCommand(() ->
-                testSubsystem.setVelocity(Units.RPM.of(controller.getRightJSY() * 1000)),
-                testSubsystem));
+//        testSubsystem.setDefaultCommand(new InstantCommand(() ->
+//                testSubsystem.setVelocity(Units.RPM.of(controller.getRightJSY() * 1000)),
+//                testSubsystem));
 
         drivetrain.setDefaultCommand(new InstantCommand(() ->
                 drivetrain.drive(controller.getLeftJSX()*3, controller.getLeftJSY()*3, controller.getRightJSX()*4),
@@ -44,15 +44,15 @@ public class RobotContainer {
                 drivetrain));
         controller.x.onTrue(new InstantCommand(() ->
                 drivetrain.setModule(new SwerveModuleState(
-                        2, new Rotation2d()), Drivetrain.SwerveModules.frontRight),
+                        2, Rotation2d.fromDegrees(5)), Drivetrain.SwerveModules.frontRight),
                 drivetrain));
         controller.b.onTrue(new InstantCommand(() ->
                 drivetrain.setModule(new SwerveModuleState(
-                        2, new Rotation2d()), Drivetrain.SwerveModules.backLeft),
+                        2, Rotation2d.fromDegrees(10)), Drivetrain.SwerveModules.backLeft),
                 drivetrain));
         controller.a.onTrue(new InstantCommand(() ->
                 drivetrain.setModule(new SwerveModuleState(
-                        2, new Rotation2d()), Drivetrain.SwerveModules.backRight),
+                        2, Rotation2d.fromDegrees(15)), Drivetrain.SwerveModules.backRight),
                 drivetrain));
 
         controller.y.onFalse(new InstantCommand(() ->
@@ -71,6 +71,9 @@ public class RobotContainer {
                 drivetrain.setModule(new SwerveModuleState(
                         0, new Rotation2d()), Drivetrain.SwerveModules.backRight),
                 drivetrain));
+
+        testSubsystem.setDefaultCommand(new InstantCommand(() ->
+                testSubsystem.setVelocity(Units.RPM.of(controller.getRightJSY()*10)), testSubsystem));
     }
 
     public Command getAutonomousCommand() {
