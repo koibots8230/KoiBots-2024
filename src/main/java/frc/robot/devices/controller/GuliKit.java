@@ -1,11 +1,11 @@
-package frc.robot.devices;
+package frc.robot.devices.controller;
 
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 
-public class GuliKit {
+public class GuliKit implements Controller {
     public GenericHID controller;
     public Trigger a;
     public Trigger b;

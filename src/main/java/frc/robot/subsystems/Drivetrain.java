@@ -2,20 +2,18 @@ package frc.robot.subsystems;
 
 
 import com.kauailabs.navx.frc.AHRS;
-import com.revrobotics.*;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.*;
-import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
-import edu.wpi.first.units.Distance;
-import edu.wpi.first.units.Measure;
-import edu.wpi.first.units.Units;
-import edu.wpi.first.units.Velocity;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.networktables.StructPublisher;
+import edu.wpi.first.units.*;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.devices.motor.Motor;
+import frc.robot.devices.motor.MotorFactory;
 
 public class Drivetrain extends SubsystemBase {
     private final SwerveModule frontLeftModule;
@@ -27,6 +25,7 @@ public class Drivetrain extends SubsystemBase {
     private final AHRS gyro;
     private final StructArrayPublisher<SwerveModuleState> publisherReal;
     private final StructArrayPublisher<SwerveModuleState> publisherSetpoint;
+    private final StructPublisher<Pose2d> publisherPose;
 
     public Drivetrain(boolean isReal) {
         // TODO: Set the default command, if any, for this subsystem by calling setDefaultCommand(command)
@@ -46,8 +45,8 @@ public class Drivetrain extends SubsystemBase {
         gyro = new AHRS();
         kinematics = new SwerveDriveKinematics(
                 new Translation2d(Constants.Robot.ROBOT_LENGTH.divide(2), Constants.Robot.ROBOT_WIDTH.divide(2)),
-                new Translation2d(Constants.Robot.ROBOT_LENGTH.divide(-2), Constants.Robot.ROBOT_WIDTH.divide(2)),
                 new Translation2d(Constants.Robot.ROBOT_LENGTH.divide(2), Constants.Robot.ROBOT_WIDTH.divide(-2)),
+                new Translation2d(Constants.Robot.ROBOT_LENGTH.divide(-2), Constants.Robot.ROBOT_WIDTH.divide(2)),
                 new Translation2d(Constants.Robot.ROBOT_LENGTH.divide(-2), Constants.Robot.ROBOT_WIDTH.divide(-2))
         );
         odometry = new SwerveDriveOdometry(kinematics, new Rotation2d(), getModulePositions());
@@ -63,56 +62,35 @@ public class Drivetrain extends SubsystemBase {
                 .getStructArrayTopic("/Swerve/State", SwerveModuleState.struct).publish();
         publisherSetpoint = NetworkTableInstance.getDefault()
                 .getStructArrayTopic("/Swerve/TargetUnoptimized", SwerveModuleState.struct).publish();
+        publisherPose = NetworkTableInstance.getDefault()
+                .getStructTopic("/Swerve/Pose", Pose2d.struct).publish();
     }
 
     @Override
     public void periodic() {
         odometry.update(getYaw(), getModulePositions());
         publisherReal.set(getModuleStates());
+        publisherPose.set(odometry.getPoseMeters());
     }
 
-    public Rotation2d getYaw() {
-        return Rotation2d.fromDegrees(gyro.getYaw());
+    public void drive(double x, double y, double r) {
+        x *= -2;
+        y *= 2;
+        r *= 4;
+        SwerveModuleState[] states = kinematics.toSwerveModuleStates(new ChassisSpeeds(y, x, r));
+        frontLeftModule.setState(states[0]);
+        frontRightModule.setState(states[1]);
+        backLeftModule.setState(states[2]);
+        backRightModule.setState(states[3]);
+        publisherSetpoint.set(states);
     }
 
     public void zeroGyro() {
         gyro.reset();
     }
 
-    public SwerveModulePosition[] getModulePositions() {
-        return new SwerveModulePosition[] {
-                frontLeftModule.getPosition(),
-                frontRightModule.getPosition(),
-                backLeftModule.getPosition(),
-                backRightModule.getPosition()
-        };
-    }
-
-    public SwerveModuleState[] getModuleStates() {
-        return new SwerveModuleState[] {
-                frontLeftModule.getState(),
-                frontRightModule.getState(),
-                backLeftModule.getState(),
-                backRightModule.getState()
-        };
-    }
-
-    public void drive(double x, double y, double r) {
-        SwerveModuleState[] states = kinematics.toSwerveModuleStates(new ChassisSpeeds(y, -x, r));
-        frontLeftModule.setState(states[0]);
-        frontRightModule.setState(states[1]);
-        backLeftModule.setState(states[2]);
-        backRightModule.setState(states[3]);
-
-        SmartDashboard.putNumber("x", x);
-        SmartDashboard.putNumber("y", y);
-        SmartDashboard.putNumber("r", r);
-        publisherSetpoint.set(states);
-    }
-
-    public void setModule(SwerveModuleState state, SwerveModules module) {
-        getModule(module).setStateNoOptimize(state);
-        SmartDashboard.putNumber(module.toString(), SmartDashboard.getNumber(module.toString(), 0) + 1);
+    public Rotation2d getYaw() {
+        return Rotation2d.fromDegrees(gyro.getYaw());
     }
 
     private SwerveModule getModule(SwerveModules module) {
@@ -131,126 +109,64 @@ public class Drivetrain extends SubsystemBase {
         backRight
     }
 
+    public SwerveModuleState[] getModuleStates() {
+        return new SwerveModuleState[] {
+                frontLeftModule.getState(),
+                frontRightModule.getState(),
+                backLeftModule.getState(),
+                backRightModule.getState()
+        };
+    }
+
+    public SwerveModulePosition[] getModulePositions() {
+        return new SwerveModulePosition[] {
+                frontLeftModule.getPosition(),
+                frontRightModule.getPosition(),
+                backLeftModule.getPosition(),
+                backRightModule.getPosition()
+        };
+    }
+
     private static class SwerveModule {
-        private final CANSparkMax driveMotor;
-        private final CANSparkMax turnMotor;
-        private final SparkPIDController driveController;
-        private final SparkPIDController turnController;
-        private final RelativeEncoder driveEncoder;
-        private final AbsoluteEncoder turnEncoder;
-        private final RelativeEncoder turnEncoderSim;
-        private final boolean isReal;
+        private final Motor driveMotor;
+        private final Motor turnMotor;
 
-        public SwerveModule(boolean isReal, int driveCANID, int turnCANID) {
-            this.isReal = isReal;
-            driveMotor = new CANSparkMax(driveCANID, CANSparkLowLevel.MotorType.kBrushless);
-            turnMotor = new CANSparkMax(turnCANID, CANSparkLowLevel.MotorType.kBrushless);
-            driveMotor.restoreFactoryDefaults();
-            turnMotor.restoreFactoryDefaults();
-            if (isReal) {
-                REVPhysicsSim.getInstance().addSparkMax(driveMotor, DCMotor.getNEO(1));
-                REVPhysicsSim.getInstance().addSparkMax(turnMotor, DCMotor.getNeo550(1));
-            }
-
-//            driveMotor.restoreFactoryDefaults();
-//            driveController = driveMotor.getPIDController();
-//            driveEncoder = driveMotor.getEncoder();
-//            driveController.setFeedbackDevice(driveEncoder);
-//            driveEncoder.setPositionConversionFactor(Constants.Drivetrain.Drive.ENCODER_POSITION_FACTOR);
-//            driveEncoder.setVelocityConversionFactor(Constants.Drivetrain.Drive.ENCODER_VELOCITY_FACTOR);
-//            driveController.setP(Constants.Drivetrain.Drive.P);
-//            driveController.setI(Constants.Drivetrain.Drive.I);
-//            driveController.setD(Constants.Drivetrain.Drive.D);
-//            driveController.setFF(Constants.Drivetrain.Drive.FF);
-//            driveController.setOutputRange(Constants.Drivetrain.Drive.MIN_OUT, Constants.Drivetrain.Drive.MAX_OUT);
-//            driveMotor.setIdleMode(Constants.Drivetrain.Drive.IDLE_MODE);
-//            driveMotor.setSmartCurrentLimit((int) Constants.Drivetrain.Drive.CURRENT_LIMIT.in(Units.Amps));
-//            driveMotor.burnFlash();
-
-//            turnMotor.restoreFactoryDefaults();
-//            turnController = turnMotor.getPIDController();
-//            turnEncoder = turnMotor.getAbsoluteEncoder();
-//            if (isReal) turnController.setFeedbackDevice(turnEncoder);
-//            turnEncoder.setPositionConversionFactor(Constants.Drivetrain.Turn.ENCODER_POSITION_FACTOR);
-//            turnEncoder.setVelocityConversionFactor(Constants.Drivetrain.Turn.ENCODER_VELOCITY_FACTOR);
-//            turnEncoder.setInverted(Constants.Drivetrain.Turn.INVERT);
-//            turnController.setPositionPIDWrappingEnabled(true);
-//            turnController.setPositionPIDWrappingMinInput(Constants.Drivetrain.Turn.MIN_IN);
-//            turnController.setPositionPIDWrappingMaxInput(Constants.Drivetrain.Turn.MAX_IN);
-//            turnController.setP(Constants.Drivetrain.Turn.P);
-//            turnController.setI(Constants.Drivetrain.Turn.I);
-//            turnController.setD(Constants.Drivetrain.Turn.D);
-//            turnController.setFF(Constants.Drivetrain.Turn.FF);
-//            turnController.setOutputRange(Constants.Drivetrain.Turn.MIN_OUT, Constants.Drivetrain.Turn.MAX_OUT);
-//            turnMotor.setIdleMode(Constants.Drivetrain.Turn.IDLE_MODE);
-//            turnMotor.setSmartCurrentLimit((int) Constants.Drivetrain.Turn.CURRENT_LIMIT.in(Units.Amps));
-//            turnMotor.burnFlash();
-
-//            turnEncoderSim = turnMotor.getEncoder();
-//            if (!isReal) turnController.setFeedbackDevice(turnEncoderSim);
-//            turnEncoderSim.setPositionConversionFactor(Constants.Drivetrain.Turn.ENCODER_POSITION_FACTOR);
-//            turnEncoderSim.setVelocityConversionFactor(Constants.Drivetrain.Turn.ENCODER_VELOCITY_FACTOR);
-//            turnEncoder.setInverted(Constants.Drivetrain.Turn.INVERT);
-
-            driveController = driveMotor.getPIDController();
-            driveController.setP(Constants.Drivetrain.Drive.P);
-            driveController.setI(Constants.Drivetrain.Drive.I);
-            driveController.setD(Constants.Drivetrain.Drive.D);
-            driveController.setFF(Constants.Drivetrain.Drive.FF);
-            driveEncoder = driveMotor.getEncoder();
-
-            turnController = turnMotor.getPIDController();
-            turnController.setP(Constants.Drivetrain.Turn.P);
-            turnController.setI(Constants.Drivetrain.Turn.I);
-            turnController.setD(Constants.Drivetrain.Turn.D);
-            turnController.setFF(Constants.Drivetrain.Turn.FF);
-            turnEncoderSim = turnMotor.getEncoder();
-
-            turnEncoder = turnMotor.getAbsoluteEncoder();
-
-            driveMotor.burnFlash();
-            turnMotor.burnFlash();
-        }
-
-        public Rotation2d getAngle() {
-//            if (isReal) return new Rotation2d(turnEncoder.getPosition());
-//            else return new Rotation2d(turnEncoderSim.getPosition());
-            return new Rotation2d(turnEncoderSim.getPosition());
-        }
-
-        public Measure<Distance> getDistance() {
-            return Units.Meters.of(driveEncoder.getPosition());
-        }
-
-        public Measure<Velocity<Distance>> getVelocity() {
-            return Units.MetersPerSecond.of(driveEncoder.getVelocity());
+        public SwerveModule(boolean isReal, int driveID, int turnID) {
+            driveMotor = MotorFactory.get().create(
+                    driveID,
+                    Constants.Drivetrain.Drive.P,
+                    Constants.Drivetrain.Drive.I,
+                    Constants.Drivetrain.Drive.D,
+                    Constants.Drivetrain.Drive.FF,
+                    1 / Constants.Drivetrain.Drive.ENCODER_VELOCITY_FACTOR * 60,
+                    1 / Constants.Drivetrain.Drive.ENCODER_POSITION_FACTOR * 60,
+                    isReal
+            );
+            turnMotor = MotorFactory.get().create(
+                    turnID,
+                    Constants.Drivetrain.Turn.P,
+                    Constants.Drivetrain.Turn.I,
+                    Constants.Drivetrain.Turn.D,
+                    Constants.Drivetrain.Turn.FF,
+                    1 / Constants.Drivetrain.Turn.ENCODER_VELOCITY_FACTOR * 60,
+                    1 / Constants.Drivetrain.Turn.ENCODER_POSITION_FACTOR * 60,
+                    isReal
+            );
         }
 
         public SwerveModuleState getState() {
-            return new SwerveModuleState(getVelocity(), getAngle());
+            return new SwerveModuleState(
+                    driveMotor.getVelocity().in(Units.RPM), new Rotation2d(turnMotor.getPosition()));
         }
 
         public SwerveModulePosition getPosition() {
-            return new SwerveModulePosition(getDistance(), getAngle());
-        }
-
-        public void setStateNoOptimize(SwerveModuleState state) {
-            driveController.setReference(state.speedMetersPerSecond, CANSparkBase.ControlType.kVelocity);
-            turnController.setReference(state.angle.getRadians(), CANSparkBase.ControlType.kPosition);
+            return new SwerveModulePosition(
+                    driveMotor.getPosition().in(Units.Rotations), new Rotation2d(turnMotor.getPosition()));
         }
 
         public void setState(SwerveModuleState state) {
-            SwerveModuleState optimizedState =
-                    SwerveModuleState.optimize(state, getAngle());
-            optimizedState.speedMetersPerSecond *=
-                    optimizedState.angle.minus(getAngle()).getCos();
-            setStateNoOptimize(state);
-        }
-
-        public void zeroTurnEncoder() {
-            turnEncoder.setZeroOffset(0);
-            turnEncoder.setZeroOffset(turnEncoder.getPosition());
-            turnEncoderSim.setPosition(0);
+            driveMotor.setVelocity(Units.RPM.of(state.speedMetersPerSecond));
+            turnMotor.setPosition(Units.Radians.of(state.angle.getRadians()));
         }
     }
 }

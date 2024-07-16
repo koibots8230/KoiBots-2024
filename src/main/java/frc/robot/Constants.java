@@ -66,49 +66,11 @@ public final class Constants {
     }
 
     public static final class TestSubsystem {
-        public static final class Drive {
-            public static final CANSparkBase.IdleMode IDLE_MODE = CANSparkBase.IdleMode.kBrake;
-            public static final Measure<Current> CURRENT_LIMIT = Units.Amps.of(50);
-            public static final int PINION_TEETH = 14;
-            public static final double REDUCTION = (45.0 * 22) / (PINION_TEETH * 15);
-            public static final Measure<Velocity<Angle>> MOTOR_FREE_SPEED =
-                    Units.RotationsPerSecond.of(5676.0 / 60);
-            public static final Measure<Distance> WHEEL_DIAMERER = Units.Meters.of(0.0762);
-            public static final Measure<Distance> WHEEL_CIRCUMFERENCE = WHEEL_DIAMERER.times(Math.PI);
-            public static final Measure<Velocity<Distance>> WHEEL_FREE_SPEED =
-                    Units.MetersPerSecond.of((MOTOR_FREE_SPEED.in(Units.RPM) *
-                            WHEEL_CIRCUMFERENCE.in(Units.Meters)) / REDUCTION);
-            public static final double ENCODER_POSITION_FACTOR = (WHEEL_DIAMERER.in(Units.Meters) * Math.PI)
-                    / REDUCTION; // meters
-            public static final double ENCODER_VELOCITY_FACTOR = ((WHEEL_DIAMERER.in(Units.Meters) * Math.PI)
-                    / REDUCTION) / 60.0; // meters per second
-
-            public static final int CANID = 14;
-            public static final double P = 0.0001;
-            public static final double I = 0;
-            public static final double D = 1;
-            public static final double FF = 1 / WHEEL_FREE_SPEED.in(Units.MetersPerSecond);
-            public static final double MIN_OUT = -1;
-            public static final double MAX_OUT = 1;
-        }
-
-        public static final class Turn {
-            public static final CANSparkBase.IdleMode IDLE_MODE = CANSparkBase.IdleMode.kBrake;
-            public static final Measure<Current> CURRENT_LIMIT = Units.Amps.of(20);
-            public static final boolean INVERT = true;
-            public static final double ENCODER_POSITION_FACTOR = (2 * Math.PI); // radians
-            public static final double ENCODER_VELOCITY_FACTOR = (2 * Math.PI) / 60.0; // radians per second
-
-            public static final int CANID = 15;
-            public static final double P = 0.0001;
-            public static final double I = 0;
-            public static final double D = 1;
-            public static final double FF = 0;
-            public static final double MIN_IN = 0;
-            public static final double MAX_IN = ENCODER_POSITION_FACTOR;
-            public static final double MIN_OUT = -1;
-            public static final double MAX_OUT = 1;
-        }
+        public static final int CANID = 15;
+        public static final double P = 0.0001;
+        public static final double I = 0;
+        public static final double D = 1;
+        public static final double FF = 0;
     }
 
     public static final class Operation {
