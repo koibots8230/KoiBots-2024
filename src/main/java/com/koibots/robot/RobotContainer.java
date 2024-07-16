@@ -12,9 +12,13 @@ import com.koibots.robot.autos.AutoCommands;
 import com.koibots.robot.commands.Intake.IntakeCommand;
 import com.koibots.robot.commands.Intake.IntakeShooter;
 import com.koibots.robot.commands.Scoring.FeedNote;
+import com.koibots.robot.commands.Scoring.Shoot;
 import com.koibots.robot.commands.Shooter.SpinUpShooter;
 import com.koibots.robot.commands.Swerve.FieldOrientedDrive;
 import com.koibots.robot.commands.Swerve.TestDrive;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
+
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -53,11 +57,29 @@ public class RobotContainer {
     }
 
     public void registerAutos() {
-        for (int a = 0; a < AutoCommands.values().length; a++) {
-            autos.addOption(AutoCommands.values()[a].name, AutoCommands.values()[a].command);
-        }
+        NamedCommands.registerCommand("Shoot", new Shoot(SetpointConstants.SHOOTER_SPEEDS.SPEAKER.topSpeed, SetpointConstants.SHOOTER_SPEEDS.SPEAKER.bottomSpeed, false));
+        NamedCommands.registerCommand("Intake", new IntakeCommand(false));
+        NamedCommands.registerCommand("Score_Amp", new Shoot(SetpointConstants.SHOOTER_SPEEDS.AMP.topSpeed, SetpointConstants.SHOOTER_SPEEDS.AMP.bottomSpeed, false));
+
+        AutoBuilder.configureHolonomic(
+            Swerve.get()::getEstimatedPose,
+            Swerve.get()::resetOdometry,
+            Swerve.get()::getRelativeSpeeds,
+            Swerve.get()::driveRobotRelative,
+            ControlConstants.HOLONOMIC_CONFIG,
+            () -> false,
+            Swerve.get()
+        );
+
+        autos = AutoBuilder.buildAutoChooser();
 
         SmartDashboard.putData("Autos", autos);
+
+        // for (int a = 0; a < AutoCommands.values().length; a++) {
+        //     autos.addOption(AutoCommands.values()[a].name, AutoCommands.values()[a].command);
+        // }
+
+        // SmartDashboard.putData("Autos", autos);
     }
 
     public void configureButtonBindings() {

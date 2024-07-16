@@ -8,6 +8,7 @@ import com.koibots.robot.Constants.DeviceIDs;
 import com.koibots.robot.Constants.RobotConstants;
 import com.koibots.robot.Constants.VisionConstants;
 import com.koibots.robot.Robot;
+
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -30,6 +31,8 @@ public class Swerve extends SubsystemBase {
     GyroIO gyro;
     GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
     SwerveDrivePoseEstimator odometry;
+
+    Rotation2d[] stopAngles;
 
     public Swerve() {
         if (Robot.isReal()) {
@@ -142,10 +145,20 @@ public class Swerve extends SubsystemBase {
                 && speeds.vyMetersPerSecond == 0.0
                 && speeds.omegaRadiansPerSecond == 0) {
             var currentStates = this.getModuleStates();
-            targetModuleStates[0] = new SwerveModuleState(0, currentStates[0].angle);
-            targetModuleStates[1] = new SwerveModuleState(0, currentStates[1].angle);
-            targetModuleStates[2] = new SwerveModuleState(0, currentStates[2].angle);
-            targetModuleStates[3] = new SwerveModuleState(0, currentStates[3].angle);
+            if(stopAngles == null) {
+                stopAngles = new Rotation2d[] {
+                   currentStates[0].angle,
+                   currentStates[1].angle,
+                   currentStates[2].angle,
+                   currentStates[3].angle 
+                };
+            }
+            targetModuleStates[0] = new SwerveModuleState(0, stopAngles[0]);
+            targetModuleStates[1] = new SwerveModuleState(0, stopAngles[1]);
+            targetModuleStates[2] = new SwerveModuleState(0, stopAngles[2]);
+            targetModuleStates[3] = new SwerveModuleState(0, stopAngles[3]);
+        } else {
+            stopAngles = null;
         }
 
         this.setModuleStates(targetModuleStates);

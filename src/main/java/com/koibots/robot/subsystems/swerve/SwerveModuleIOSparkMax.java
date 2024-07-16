@@ -5,16 +5,24 @@ package com.koibots.robot.subsystems.swerve;
 
 import static edu.wpi.first.units.Units.*;
 
+import com.koibots.robot.Constants.ControlConstants;
 import com.koibots.robot.Constants.DeviceIDs;
 import com.koibots.robot.Constants.MotorConstants;
 import com.koibots.robot.Constants.RobotConstants;
 import com.koibots.robot.Constants.SensorConstants;
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkPIDController;
+import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.SparkAbsoluteEncoder.Type;
+
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Voltage;
 
@@ -23,6 +31,16 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
     private final CANSparkMax turnMotor;
     private final RelativeEncoder driveEncoder;
     private final AbsoluteEncoder turnEncoder;
+
+    private final SimpleMotorFeedforward turnFF;
+
+    private final TrapezoidProfile turnProfile;
+    private TrapezoidProfile.State goal;
+
+    private TrapezoidProfile.State setpoint;
+
+    private final SparkPIDController turnPID;
+
     private Rotation2d chassisAngularOffset;
 
     public SwerveModuleIOSparkMax(int driveId, int turnId) {
@@ -74,10 +92,28 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
                     Rotation2d.fromRadians(
                             Math.PI / 2); // Rotation2d.fromDegrees((3 * Math.PI) / 2);
         }
+        turnMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 8);
 
         driveEncoder.setPosition(0.0);
         driveEncoder.setAverageDepth(SensorConstants.DRIVE_ENCODER_SAMPLING_DEPTH);
         driveEncoder.setMeasurementPeriod(16);
+
+        turnPID = turnMotor.getPIDController();
+        turnPID.setP(ControlConstants.TURN_PID_CONSTANTS.kP);
+        turnPID.setI(ControlConstants.TURN_PID_CONSTANTS.kI);
+        turnPID.setD(0);
+
+        turnPID.setFeedbackDevice(turnEncoder);
+        turnPID.setPositionPIDWrappingEnabled(true);
+        turnPID.setPositionPIDWrappingMaxInput(Math.PI);
+        turnPID.setPositionPIDWrappingMinInput(-Math.PI);
+
+        turnFF = new SimpleMotorFeedforward(
+            ControlConstants.TURN_FEEDFORWARD_CONSTANTS.ks, ControlConstants.TURN_FEEDFORWARD_CONSTANTS.kv);
+
+        turnProfile = new TrapezoidProfile(new Constraints(Math.PI, Math.PI/2));
+        goal = new TrapezoidProfile.State(turnEncoder.getPosition(), 0);
+        setpoint = new TrapezoidProfile.State(turnEncoder.getPosition(), 0);
     }
 
     @Override
@@ -97,15 +133,25 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
         inputs.turnAppliedVoltage =
                 Volts.of(turnMotor.getBusVoltage()).times(turnMotor.getAppliedOutput());
         inputs.turnCurrent = Amps.of(turnMotor.getOutputCurrent());
+
+        setpoint = turnProfile.calculate(0.02, setpoint, goal);
+        inputs.setpoint = goal.position;
+        turnPID.setReference(goal.position, ControlType.kPosition, 0, turnFF.calculate(setpoint.velocity));
+    }
+
+    @Override
+    public void setTurnPosition(Rotation2d position) {
+        goal = new TrapezoidProfile.State(position.getRadians() + chassisAngularOffset.getRadians(), 0);
     }
 
     @Override
     public void setDriveVoltage(Measure<Voltage> voltage) {
+        voltage = (chassisAngularOffset.getRadians() == 0 || chassisAngularOffset.getRadians() == Math.PI) ? voltage.times(-1) : voltage;
         driveMotor.setVoltage(voltage.in(Volts));
     }
 
     @Override
     public void setTurnVoltage(Measure<Voltage> voltage) {
-        turnMotor.setVoltage(voltage.in(Volts));
+        
     }
 }

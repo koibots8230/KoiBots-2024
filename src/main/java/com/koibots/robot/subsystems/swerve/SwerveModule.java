@@ -60,7 +60,7 @@ public class SwerveModule {
 
     public void periodic() {
         io.updateInputs(inputs);
-        inputs.setpoint = angleSetpoint.getRadians();
+        //inputs.setpoint = angleSetpoint.getRadians();
         Logger.processInputs("Subsystems/Drive/Module" + index, inputs);
 
         // Run closed loop turn control
@@ -70,8 +70,7 @@ public class SwerveModule {
                 Volts.of(turnPID + (Math.signum(turnPID) * ControlConstants.DRIVE_TURN_KS));
         //                         + (angleSetpoint.getRadians() -
         // Math.signum(getAngle().getRadians())) * ControlConstants.DRIVE_TURN_KS);
-
-        io.setTurnVoltage(angleOutput);
+        io.setTurnPosition(angleSetpoint);
 
         // Run closed loop drive control
         if (speedSetpoint > 0.1 || speedSetpoint < -0.1) {
@@ -94,7 +93,7 @@ public class SwerveModule {
         var optimizedSetpoint = SwerveModuleState.optimize(state, getAngle());
 
         // Update setpoints, controllers run in "periodic"
-        angleSetpoint = optimizedSetpoint.angle;
+        angleSetpoint = state.angle;
         speedSetpoint =
                 optimizedSetpoint.speedMetersPerSecond * Math.cos(turnFeedback.getPositionError());
         // Cosine scaling makes it so it won't drive (much) while module is turning
