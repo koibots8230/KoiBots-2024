@@ -1,10 +1,7 @@
 package frc.robot.devices.motor;
 
 import com.revrobotics.*;
-import edu.wpi.first.units.Angle;
-import edu.wpi.first.units.Measure;
-import edu.wpi.first.units.Units;
-import edu.wpi.first.units.Velocity;
+import edu.wpi.first.units.*;
 
 public class MotorCANSparkMax implements Motor {
     private final CANSparkMax canSparkMax;
@@ -25,8 +22,14 @@ public class MotorCANSparkMax implements Motor {
     }
 
     @Override
-    public void setVelocity(Measure<Velocity<Angle>> velocity) {
+    public void setVelocityAngle(Measure<Velocity<Angle>> velocity) {
         controller.setReference(velocity.in(Units.RPM), CANSparkBase.ControlType.kVelocity);
+
+    }
+
+    @Override
+    public void setVelocityDistance(Measure<Velocity<Distance>> velocity) {
+        controller.setReference(velocity.in(Units.MetersPerSecond), CANSparkBase.ControlType.kVelocity);
     }
 
     @Override
@@ -35,8 +38,13 @@ public class MotorCANSparkMax implements Motor {
     }
 
     @Override
-    public Measure<Velocity<Angle>> getVelocity() {
+    public Measure<Velocity<Angle>> getVelocityAngle() {
         return Units.RPM.of(encoder.getVelocity());
+    }
+
+    @Override
+    public Measure<Velocity<Distance>> getVelocityDistance() {
+        return Units.MetersPerSecond.of(encoder.getVelocity());
     }
 
     @Override

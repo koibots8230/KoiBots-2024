@@ -25,10 +25,10 @@ public class MotorSim implements Motor{
         position = Units.Rotations.zero();
         prevPosition = Units.Rotations.zero();
         simDevice = SimDevice.create("Motor [".concat(String.valueOf(ID)).concat("]"));
-        simVelocity = simDevice.createDouble("Velocity (RPM)", SimDevice.Direction.kOutput, 0);
+        simVelocity = simDevice.createDouble("Velocity (Likely RPM)", SimDevice.Direction.kOutput, 0);
         simVelocityFactor = simDevice.createDouble("Velocity Factor", SimDevice.Direction.kOutput, 0);
         simVelocityPreconv = simDevice.createDouble("Velocity Pre-conversion", SimDevice.Direction.kOutput, 0);
-        simPosition = simDevice.createDouble("Position (Rotations)", SimDevice.Direction.kOutput, 0);
+        simPosition = simDevice.createDouble("Position (Likely Rotations)", SimDevice.Direction.kOutput, 0);
         simPositionFactor = simDevice.createDouble("Position Factor", SimDevice.Direction.kOutput, 0);
         simPositionPreconv = simDevice.createDouble("Position Pre-conversion", SimDevice.Direction.kOutput, 0);
         this.velocityFactor = velocityFactor;
@@ -36,9 +36,15 @@ public class MotorSim implements Motor{
     }
 
     @Override
-    public void setVelocity(Measure<Velocity<Angle>> velocity) {
+    public void setVelocityAngle(Measure<Velocity<Angle>> velocity) {
         usePosition = false;
         this.velocity = velocity;
+    }
+
+    @Override
+    public void setVelocityDistance(Measure<Velocity<Distance>> velocity) {
+        usePosition = false;
+        this.velocity = Units.RPM.of(velocity.in(Units.MetersPerSecond));
     }
 
     @Override
@@ -48,8 +54,13 @@ public class MotorSim implements Motor{
     }
 
     @Override
-    public Measure<Velocity<Angle>> getVelocity() {
+    public Measure<Velocity<Angle>> getVelocityAngle() {
         return velocity;
+    }
+
+    @Override
+    public Measure<Velocity<Distance>> getVelocityDistance() {
+        return Units.MetersPerSecond.of(velocity.in(Units.RPM));
     }
 
     @Override
