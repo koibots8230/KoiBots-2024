@@ -12,6 +12,8 @@ import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.units.*;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.devices.gyro.Gyro;
+import frc.robot.devices.gyro.GyroFactory;
 import frc.robot.devices.motor.Motor;
 import frc.robot.devices.motor.MotorFactory;
 
@@ -22,7 +24,7 @@ public class Drivetrain extends SubsystemBase {
     private final SwerveModule backRightModule;
     private final SwerveDriveKinematics kinematics;
     private final SwerveDriveOdometry odometry;
-    private final AHRS gyro;
+    private final Gyro gyro;
     private final StructArrayPublisher<SwerveModuleState> publisherReal;
     private final StructArrayPublisher<SwerveModuleState> publisherSetpoint;
     private final StructPublisher<Pose2d> publisherPose;
@@ -42,7 +44,7 @@ public class Drivetrain extends SubsystemBase {
         backRightModule = new SwerveModule(isReal, Constants.Drivetrain.Drive.ID_BACK_RIGHT,
                 Constants.Drivetrain.Turn.ID_BACK_RIGHT);
 
-        gyro = new AHRS();
+        gyro = GyroFactory.get().create(isReal);
         kinematics = new SwerveDriveKinematics(
                 new Translation2d(Constants.Robot.ROBOT_LENGTH.divide(2), Constants.Robot.ROBOT_WIDTH.divide(2)),
                 new Translation2d(Constants.Robot.ROBOT_LENGTH.divide(2), Constants.Robot.ROBOT_WIDTH.divide(-2)),
@@ -50,13 +52,6 @@ public class Drivetrain extends SubsystemBase {
                 new Translation2d(Constants.Robot.ROBOT_LENGTH.divide(-2), Constants.Robot.ROBOT_WIDTH.divide(-2))
         );
         odometry = new SwerveDriveOdometry(kinematics, new Rotation2d(), getModulePositions());
-
-        new Thread(() -> {
-            try {
-                Thread.sleep(1000);
-                zeroGyro();
-            } catch (Exception ignore) {}
-        }).start();
 
         publisherReal = NetworkTableInstance.getDefault()
                 .getStructArrayTopic("/Swerve/State", SwerveModuleState.struct).publish();
@@ -68,29 +63,24 @@ public class Drivetrain extends SubsystemBase {
 
     @Override
     public void periodic() {
-        odometry.update(getYaw(), getModulePositions());
+        odometry.update(gyro.getYaw(), getModulePositions());
         publisherReal.set(getModuleStates());
         publisherPose.set(odometry.getPoseMeters());
+        SwerveModuleState[] states = getModuleStates();
+        ChassisSpeeds chassisSpeeds = kinematics.toChassisSpeeds(states[0], states[1], states[2], states[3]);
+        gyro.update(Units.RadiansPerSecond.of(chassisSpeeds.omegaRadiansPerSecond));
     }
 
     public void drive(double x, double y, double r) {
         x *= -2;
         y *= 2;
-        r *= 4;
+        r *= -4;
         SwerveModuleState[] states = kinematics.toSwerveModuleStates(new ChassisSpeeds(y, x, r));
         frontLeftModule.setState(states[0]);
         frontRightModule.setState(states[1]);
         backLeftModule.setState(states[2]);
         backRightModule.setState(states[3]);
         publisherSetpoint.set(states);
-    }
-
-    public void zeroGyro() {
-        gyro.reset();
-    }
-
-    public Rotation2d getYaw() {
-        return Rotation2d.fromDegrees(gyro.getYaw());
     }
 
     private SwerveModule getModule(SwerveModules module) {

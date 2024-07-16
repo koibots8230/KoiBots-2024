@@ -74,22 +74,22 @@ public class MotorSim implements Motor{
 
         if (!usePosition) {
             simVelocity.set(velocity.in(Units.RPM));
-            simVelocityPreconv.set(velocity.times(velocityFactor).in(Units.RPM));
+            simVelocityPreconv.set(velocity.divide(velocityFactor).in(Units.RPM));
 
             position = position.plus(Units.Rotations.of(
-                    velocity.in(Units.Rotations.per(Units.Seconds)) / 50));
+                    velocity.in(Units.Rotations.per(Units.Minute)) / 50));
 
             simPosition.set(position.in(Units.Rotations));
-            simPositionPreconv.set(position.times(positionFactor).in(Units.Rotations));
+            simPositionPreconv.set(position.divide(positionFactor).in(Units.Rotations));
         }
         else {
             simPosition.set(position.in(Units.Rotations));
-            simPositionPreconv.set(position.times(positionFactor).in(Units.Rotations));
+            simPositionPreconv.set(position.divide(positionFactor).in(Units.Rotations));
 
-            velocity = position.minus(prevPosition).per(Units.Seconds.one().divide(50));
+            velocity = position.minus(prevPosition).per(Units.Minute.one().divide(50));
 
             simVelocity.set(velocity.in(Units.RPM));
-            simVelocityPreconv.set(velocity.times(velocityFactor).in(Units.RPM));
+            simVelocityPreconv.set(velocity.divide(velocityFactor).in(Units.RPM));
         }
 
         prevPosition = position;
