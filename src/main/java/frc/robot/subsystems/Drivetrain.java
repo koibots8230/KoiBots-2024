@@ -138,8 +138,8 @@ public class Drivetrain extends SubsystemBase {
                     Constants.Drivetrain.Drive.I,
                     Constants.Drivetrain.Drive.D,
                     Constants.Drivetrain.Drive.FF,
-                    1 / Constants.Drivetrain.Drive.ENCODER_VELOCITY_FACTOR * 60,
-                    1 / Constants.Drivetrain.Drive.ENCODER_POSITION_FACTOR * 60,
+                    Constants.Drivetrain.Drive.ENCODER_VELOCITY_FACTOR,
+                    Constants.Drivetrain.Drive.ENCODER_POSITION_FACTOR,
                     isReal
             );
             turnMotor = MotorFactory.get().create(
@@ -148,8 +148,8 @@ public class Drivetrain extends SubsystemBase {
                     Constants.Drivetrain.Turn.I,
                     Constants.Drivetrain.Turn.D,
                     Constants.Drivetrain.Turn.FF,
-                    1 / Constants.Drivetrain.Turn.ENCODER_VELOCITY_FACTOR * 60,
-                    1 / Constants.Drivetrain.Turn.ENCODER_POSITION_FACTOR * 60,
+                    Constants.Drivetrain.Turn.ENCODER_VELOCITY_FACTOR,
+                    Constants.Drivetrain.Turn.ENCODER_POSITION_FACTOR,
                     isReal
             );
         }
