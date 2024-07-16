@@ -29,7 +29,7 @@ public class Test extends SubsystemBase {
     }
 
     public void setVelocity(Measure<Velocity<Angle>> velocity) {
-        motor.setVelocity(velocity);
+        motor.setVelocityAngle(velocity);
     }
 
     public void setPosition(Measure<Angle> position) {

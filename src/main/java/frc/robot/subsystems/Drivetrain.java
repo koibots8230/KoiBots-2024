@@ -156,7 +156,7 @@ public class Drivetrain extends SubsystemBase {
 
         public SwerveModuleState getState() {
             return new SwerveModuleState(
-                    driveMotor.getVelocity().in(Units.RPM), new Rotation2d(turnMotor.getPosition()));
+                    driveMotor.getVelocityDistance(), new Rotation2d(turnMotor.getPosition()));
         }
 
         public SwerveModulePosition getPosition() {
@@ -165,7 +165,7 @@ public class Drivetrain extends SubsystemBase {
         }
 
         public void setState(SwerveModuleState state) {
-            driveMotor.setVelocity(Units.RPM.of(state.speedMetersPerSecond));
+            driveMotor.setVelocityDistance(Units.MetersPerSecond.of(state.speedMetersPerSecond));
             turnMotor.setPosition(Units.Radians.of(state.angle.getRadians()));
         }
     }
