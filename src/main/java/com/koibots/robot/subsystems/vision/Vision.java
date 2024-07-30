@@ -104,7 +104,6 @@ public class Vision extends SubsystemBase {
                         layout.getTagPose(tagId).get().getX() + (hypotenuse * Math.cos(hypangle)),
                         layout.getTagPose(tagId).get().getY() + (hypotenuse * Math.sin(hypangle)),
                         new Rotation2d());
-        System.out.println("Cam: " + camPose);
 
         Rotation2d angle =
                 new Rotation2d(
@@ -118,15 +117,6 @@ public class Vision extends SubsystemBase {
                                         Math.sqrt(
                                                 Math.pow(rotMatrix.get(2, 1), 2)
                                                         + Math.pow(rotMatrix.get(2, 2), 2))));
-
-        System.out.println("X thing: " + ((-VisionConstants.CAMERA_POSITIONS[camera].getX()
-                                        * Math.cos(Swerve.get().getGyroAngle().getRadians()))
-                                + (VisionConstants.CAMERA_POSITIONS[camera].getY()
-                                        * Math.sin(Swerve.get().getGyroAngle().getRadians()))));
-        System.out.println("Y thing: " + ((-VisionConstants.CAMERA_POSITIONS[camera].getY()
-                                        * Math.cos(Swerve.get().getGyroAngle().getRadians()))
-                                - (VisionConstants.CAMERA_POSITIONS[camera].getX()
-                                        * Math.sin(Swerve.get().getGyroAngle().getRadians()))));
 
         return new Pose2d(
                 camPose.getX()
@@ -171,7 +161,6 @@ public class Vision extends SubsystemBase {
                     Pose2d pose =
                             translateToFieldPose(
                                     tvec[b].value, rvec[b].value, (int) ids[b].value, a);
-                    System.out.println("Final: " + pose);
                     // spotless:off
                     if (pose.getY() > 0
                             && pose.getY() < layout.getFieldWidth()
