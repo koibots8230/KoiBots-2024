@@ -60,7 +60,7 @@ public class SwerveModule {
 
     public void periodic() {
         io.updateInputs(inputs);
-        //inputs.setpoint = angleSetpoint.getRadians();
+        // inputs.setpoint = angleSetpoint.getRadians();
         Logger.processInputs("Subsystems/Drive/Module" + index, inputs);
 
         // Run closed loop turn control

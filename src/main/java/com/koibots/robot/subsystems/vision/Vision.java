@@ -30,10 +30,7 @@ import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
-
-import org.littletonrobotics.junction.Logger;
 
 public class Vision extends SubsystemBase {
 
@@ -96,28 +93,18 @@ public class Vision extends SubsystemBase {
                 count++;
             }
         }
-        tagId = 5;
-        double hypotenuse = Math.hypot(translation[0], translation[1]);
+        double hypotenuse = Math.hypot(translation[0], translation[2]);
 
         double hypangle =
                 layout.getTagPose(tagId).get().getRotation().toRotation2d().getRadians()
-                        - Math.atan(translation[0] / translation[1]);
+                        - Math.atan(translation[0] / translation[2]);
 
         Pose2d camPose =
                 new Pose2d(
                         layout.getTagPose(tagId).get().getX() + (hypotenuse * Math.cos(hypangle)),
                         layout.getTagPose(tagId).get().getY() + (hypotenuse * Math.sin(hypangle)),
                         new Rotation2d());
-                        
-        hypotenuse =
-                Math.hypot(
-                        VisionConstants.CAMERA_POSITIONS[camera].getX(),
-                        VisionConstants.CAMERA_POSITIONS[camera].getY());
-
-        hypangle =
-                VisionConstants.CAMERA_POSITIONS[camera].getRotation().getRadians()
-                        + Swerve.get().getGyroAngle().getRadians()
-                        + (Math.PI/2);
+        System.out.println("Cam: " + camPose);
 
         Rotation2d angle =
                 new Rotation2d(
@@ -132,9 +119,26 @@ public class Vision extends SubsystemBase {
                                                 Math.pow(rotMatrix.get(2, 1), 2)
                                                         + Math.pow(rotMatrix.get(2, 2), 2))));
 
+        System.out.println("X thing: " + ((-VisionConstants.CAMERA_POSITIONS[camera].getX()
+                                        * Math.cos(Swerve.get().getGyroAngle().getRadians()))
+                                + (VisionConstants.CAMERA_POSITIONS[camera].getY()
+                                        * Math.sin(Swerve.get().getGyroAngle().getRadians()))));
+        System.out.println("Y thing: " + ((-VisionConstants.CAMERA_POSITIONS[camera].getY()
+                                        * Math.cos(Swerve.get().getGyroAngle().getRadians()))
+                                - (VisionConstants.CAMERA_POSITIONS[camera].getX()
+                                        * Math.sin(Swerve.get().getGyroAngle().getRadians()))));
+
         return new Pose2d(
-                camPose.getX() + (hypotenuse * Math.cos(hypangle)),
-                camPose.getY() + (hypotenuse * Math.sin(hypangle)),
+                camPose.getX()
+                        + ((-VisionConstants.CAMERA_POSITIONS[camera].getX()
+                                        * Math.cos(Swerve.get().getGyroAngle().getRadians()))
+                                + (VisionConstants.CAMERA_POSITIONS[camera].getY()
+                                        * Math.sin(Swerve.get().getGyroAngle().getRadians()))),
+                camPose.getY()
+                        + ((-VisionConstants.CAMERA_POSITIONS[camera].getY()
+                                        * Math.cos(Swerve.get().getGyroAngle().getRadians()))
+                                - (VisionConstants.CAMERA_POSITIONS[camera].getX()
+                                        * Math.sin(Swerve.get().getGyroAngle().getRadians()))),
                 angle);
     }
 
@@ -145,6 +149,8 @@ public class Vision extends SubsystemBase {
             TimestampedDoubleArray[] rvec = vecSubscribers[a][1].readQueue();
             TimestampedInteger[] ids = idSubscribers[a].readQueue();
             if (tvec.length == 0 || rvec.length == 0 || ids.length == 0) {
+                continue;
+            } else if (tvec[0].value.length == 1) {
                 continue;
             }
             while (!(tvec.length == rvec.length && rvec.length == ids.length)) {
@@ -159,28 +165,26 @@ public class Vision extends SubsystemBase {
                 }
             }
             for (int b = 0; b < ids.length; b++) {
-                if (ids[b].value != 0 && tvec[b].timestamp == rvec[b].timestamp && rvec[b].timestamp == ids[b].timestamp) {
-                    System.out.println(tvec[b].value[0] + ", " + tvec[b].value[1] + ", " + tvec[b].value[2]);
+                if (ids[b].value != 0
+                        && tvec[b].timestamp == rvec[b].timestamp
+                        && rvec[b].timestamp == ids[b].timestamp) {
                     Pose2d pose =
                             translateToFieldPose(
                                     tvec[b].value, rvec[b].value, (int) ids[b].value, a);
-                    // format: off
+                    System.out.println("Final: " + pose);
+                    // spotless:off
                     if (pose.getY() > 0
                             && pose.getY() < layout.getFieldWidth()
                             && pose.getX() > 0
                             && pose.getX() < layout.getFieldLength()
-                            && Math.sqrt(
-                                    Math.pow(pose.getX() - Swerve.get().getEstimatedPose().getX(), 2)
-                                        + Math.pow(pose.getY()- Swerve.get().getEstimatedPose().getY(), 2))
-                                < ((RobotState.isDisabled())
-                                        ? 100
-                                        : VisionConstants.MAX_MEASUREMENT_DIFFERENCE.in(Meters))) {
-                        Swerve.get()
-                                .addVisionMeasurement(
-                                        pose,
-                                        Microseconds.of(ids[b].serverTime));
+                            && ((RobotState.isDisabled()) ? true
+                                    : Math.sqrt(
+                                        Math.pow(pose.getX() - Swerve.get().getEstimatedPose().getX(), 2)
+                                            + Math.pow(pose.getY() - Swerve.get().getEstimatedPose().getY(), 2))
+                                    < VisionConstants.MAX_MEASUREMENT_DIFFERENCE.in(Meters))) {
+                        Swerve.get().addVisionMeasurement(pose, Microseconds.of(ids[b].serverTime));
                     }
-                    // format: on
+                    // spotless:on
                 }
             }
         }

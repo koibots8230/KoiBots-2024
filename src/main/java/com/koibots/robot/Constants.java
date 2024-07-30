@@ -150,12 +150,16 @@ public class Constants {
 
         // =====================Pathplanner=====================
 
-        public static final PIDConstantsIO TRANSLATION_PID_CONSTANTS = new PIDConstantsIO(4, 0, 0, 0.0005, 0, 0);
-        public static final PIDConstantsIO ROTATION_PID_CONSTANTS = new PIDConstantsIO(5, 0, 0, 0.0005, 0, 0);
+        public static final PIDConstantsIO TRANSLATION_PID_CONSTANTS =
+                new PIDConstantsIO(4, 0, 0, 0.0005, 0, 0);
+        public static final PIDConstantsIO ROTATION_PID_CONSTANTS =
+                new PIDConstantsIO(5, 0, 0, 0.0005, 0, 0);
 
-        public static final PIDConstantsIO X_PID_CONSTANTS = new PIDConstantsIO(1.65, 0, 0, 0, 0, 0);
+        public static final PIDConstantsIO X_PID_CONSTANTS =
+                new PIDConstantsIO(1.65, 0, 0, 0, 0, 0);
         public static final PIDConstantsIO Y_PID_CONSTANTS = new PIDConstantsIO(1.5, 0, 0, 0, 0, 0);
-        // public static final PIDConstantsIO ROTATION_PID_CONSTANTS = new PIDConstantsIO(1.35, 0, 0, 0.0005, 0, 0);
+        // public static final PIDConstantsIO ROTATION_PID_CONSTANTS = new PIDConstantsIO(1.35, 0,
+        // 0, 0.0005, 0, 0);
 
         public static final Measure<Distance> REPLANNING_ERROR_THRESHOLD = Inches.of(6);
         public static final Measure<Distance> REPLANNING_ERROR_SPIKE_THRESHOLD = Inches.of(4);
@@ -249,10 +253,10 @@ public class Constants {
         public static final int ACTIVE_CAMERAS = 3;
 
         public static final Pose2d[] CAMERA_POSITIONS = {
-            new Pose2d(-0.26035, -0.1524, new Rotation2d(Math.toRadians(90))),
-            new Pose2d(0.0254, -0.1651, new Rotation2d(Math.toRadians(180))),
-            new Pose2d(0.26035, -0.1524, new Rotation2d(Math.toRadians(270)))
-        }; // x is left, y is forward, counterclockwise on rotation
+            new Pose2d(-0.1524, -0.26035, new Rotation2d(Math.toRadians(90))),
+            new Pose2d(-0.1651, 0.0254, new Rotation2d(Math.toRadians(180))),
+            new Pose2d(-0.1524, 0.26035, new Rotation2d(Math.toRadians(270)))
+        }; // x is forward, y is left, counterclockwise on rotation
 
         public static final String[][] TOPIC_NAMES = {
             {"Cam1Tvec", "Cam1Rvec", "Cam1Ids"},
@@ -265,7 +269,7 @@ public class Constants {
 
         public static final Measure<Distance> MAX_MEASUREMENT_DIFFERENCE = Meters.of(1);
 
-        public static final Matrix<N3, N1> STDEVS = VecBuilder.fill(2,2, 50 * Math.PI);
+        public static final Matrix<N3, N1> STDEVS = VecBuilder.fill(1, 1, Math.PI);
     }
 
     public static class AutoConstants {

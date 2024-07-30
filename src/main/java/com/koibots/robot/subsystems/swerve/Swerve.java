@@ -3,12 +3,13 @@
 
 package com.koibots.robot.subsystems.swerve;
 
+import static edu.wpi.first.units.Units.*;
+
 import com.koibots.robot.Constants.ControlConstants;
 import com.koibots.robot.Constants.DeviceIDs;
 import com.koibots.robot.Constants.RobotConstants;
 import com.koibots.robot.Constants.VisionConstants;
 import com.koibots.robot.Robot;
-
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -21,9 +22,6 @@ import edu.wpi.first.units.Time;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
-import static edu.wpi.first.units.Units.*;
-
 import org.littletonrobotics.junction.Logger;
 
 public class Swerve extends SubsystemBase {
@@ -124,8 +122,7 @@ public class Swerve extends SubsystemBase {
     }
 
     public void addVisionMeasurement(Pose2d measurement, Measure<Time> timestamp) {
-        System.out.println(measurement);
-        odometry.addVisionMeasurement(measurement, timestamp.in(Seconds)); 
+        odometry.addVisionMeasurement(measurement, timestamp.in(Seconds));
     }
 
     public void zeroGyro() {
@@ -145,13 +142,14 @@ public class Swerve extends SubsystemBase {
                 && speeds.vyMetersPerSecond == 0.0
                 && speeds.omegaRadiansPerSecond == 0) {
             var currentStates = this.getModuleStates();
-            if(stopAngles == null) {
-                stopAngles = new Rotation2d[] {
-                   currentStates[0].angle,
-                   currentStates[1].angle,
-                   currentStates[2].angle,
-                   currentStates[3].angle 
-                };
+            if (stopAngles == null) {
+                stopAngles =
+                        new Rotation2d[] {
+                            currentStates[0].angle,
+                            currentStates[1].angle,
+                            currentStates[2].angle,
+                            currentStates[3].angle
+                        };
             }
             targetModuleStates[0] = new SwerveModuleState(0, stopAngles[0]);
             targetModuleStates[1] = new SwerveModuleState(0, stopAngles[1]);

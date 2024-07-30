@@ -8,7 +8,6 @@ import static edu.wpi.first.units.Units.*;
 
 import com.koibots.lib.controls.EightBitDo;
 import com.koibots.robot.Constants.*;
-import com.koibots.robot.autos.AutoCommands;
 import com.koibots.robot.commands.Intake.IntakeCommand;
 import com.koibots.robot.commands.Intake.IntakeShooter;
 import com.koibots.robot.commands.Scoring.FeedNote;
@@ -18,7 +17,6 @@ import com.koibots.robot.commands.Swerve.FieldOrientedDrive;
 import com.koibots.robot.commands.Swerve.TestDrive;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -31,7 +29,6 @@ import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
 
 public class RobotContainer {
     static EightBitDo driveController = new EightBitDo(0);
@@ -57,19 +54,28 @@ public class RobotContainer {
     }
 
     public void registerAutos() {
-        NamedCommands.registerCommand("Shoot", new Shoot(SetpointConstants.SHOOTER_SPEEDS.SPEAKER.topSpeed, SetpointConstants.SHOOTER_SPEEDS.SPEAKER.bottomSpeed, false));
+        NamedCommands.registerCommand(
+                "Shoot",
+                new Shoot(
+                        SetpointConstants.SHOOTER_SPEEDS.SPEAKER.topSpeed,
+                        SetpointConstants.SHOOTER_SPEEDS.SPEAKER.bottomSpeed,
+                        false));
         NamedCommands.registerCommand("Intake", new IntakeCommand(false));
-        NamedCommands.registerCommand("Score_Amp", new Shoot(SetpointConstants.SHOOTER_SPEEDS.AMP.topSpeed, SetpointConstants.SHOOTER_SPEEDS.AMP.bottomSpeed, false));
+        NamedCommands.registerCommand(
+                "Score_Amp",
+                new Shoot(
+                        SetpointConstants.SHOOTER_SPEEDS.AMP.topSpeed,
+                        SetpointConstants.SHOOTER_SPEEDS.AMP.bottomSpeed,
+                        false));
 
         AutoBuilder.configureHolonomic(
-            Swerve.get()::getEstimatedPose,
-            Swerve.get()::resetOdometry,
-            Swerve.get()::getRelativeSpeeds,
-            Swerve.get()::driveRobotRelative,
-            ControlConstants.HOLONOMIC_CONFIG,
-            () -> false,
-            Swerve.get()
-        );
+                Swerve.get()::getEstimatedPose,
+                Swerve.get()::resetOdometry,
+                Swerve.get()::getRelativeSpeeds,
+                Swerve.get()::driveRobotRelative,
+                ControlConstants.HOLONOMIC_CONFIG,
+                () -> false,
+                Swerve.get());
 
         autos = AutoBuilder.buildAutoChooser();
 

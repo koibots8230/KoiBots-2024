@@ -37,7 +37,7 @@ public interface SwerveModuleIO {
     default void updateInputs(SwerveModuleInputs inputs) {}
 
     default void setTurnPosition(Rotation2d position) {}
-    
+
     /** Run the drive motor at the specified voltage. */
     default void setDriveVoltage(Measure<Voltage> volts) {}
 
