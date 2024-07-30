@@ -22,8 +22,11 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Velocity;
 import edu.wpi.first.units.Voltage;
+import edu.wpi.first.wpilibj.motorcontrol.Spark;
 
 public class SwerveModuleIOSparkMax implements SwerveModuleIO {
     private final CANSparkMax driveMotor;
@@ -34,11 +37,15 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
     private final SimpleMotorFeedforward turnFF;
 
     private final TrapezoidProfile turnProfile;
-    private TrapezoidProfile.State goal;
+    private TrapezoidProfile.State turnGoal;
 
-    private TrapezoidProfile.State setpoint;
+    private TrapezoidProfile.State turnSetpoint;
 
     private final SparkPIDController turnPID;
+
+    private final SparkPIDController drivePID;
+
+    private Measure<Velocity<Distance>> driveSetpoint;
 
     private Rotation2d chassisAngularOffset;
 
@@ -100,7 +107,7 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
         turnPID = turnMotor.getPIDController();
         turnPID.setP(ControlConstants.TURN_PID_CONSTANTS.kP);
         turnPID.setI(ControlConstants.TURN_PID_CONSTANTS.kI);
-        turnPID.setD(0);
+        turnPID.setD(ControlConstants.TURN_PID_CONSTANTS.kD);
 
         turnPID.setFeedbackDevice(turnEncoder);
         turnPID.setPositionPIDWrappingEnabled(true);
@@ -113,14 +120,24 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
                         ControlConstants.TURN_FEEDFORWARD_CONSTANTS.kv);
 
         turnProfile = new TrapezoidProfile(new Constraints(Math.PI, Math.PI / 2));
-        goal = new TrapezoidProfile.State(turnEncoder.getPosition(), 0);
-        setpoint = new TrapezoidProfile.State(turnEncoder.getPosition(), 0);
+        turnGoal = new TrapezoidProfile.State(turnEncoder.getPosition(), 0);
+        turnSetpoint = new TrapezoidProfile.State(turnEncoder.getPosition(), 0);
+
+        drivePID = driveMotor.getPIDController();
+        drivePID.setP(ControlConstants.DRIVE_PID_CONSTANTS.kP);
+        drivePID.setI(ControlConstants.DRIVE_PID_CONSTANTS.kI);
+        drivePID.setD(ControlConstants.DRIVE_PID_CONSTANTS.kD);
+        drivePID.setFF(ControlConstants.DRIVE_FEEDFORWARD_CONSTANTS.kv);
+
+        driveSetpoint = MetersPerSecond.of(0);
     }
 
     @Override
     public void updateInputs(SwerveModuleInputs inputs) {
         inputs.drivePosition = Meters.of(driveEncoder.getPosition());
         inputs.driveVelocity = MetersPerSecond.of(driveEncoder.getVelocity());
+        inputs.driveSetpoint = driveSetpoint;
+
         inputs.driveAppliedVoltage =
                 Volts.of(driveMotor.getBusVoltage()).times(driveMotor.getAppliedOutput());
         inputs.driveCurrent = Amps.of(driveMotor.getOutputCurrent());
@@ -129,35 +146,29 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
                 Rotation2d.fromRadians(turnEncoder.getPosition())
                         .plus(chassisAngularOffset)
                         .minus(Rotation2d.fromRadians(Math.PI));
-
         inputs.turnVelocity = RadiansPerSecond.of(turnEncoder.getVelocity());
+
         inputs.turnAppliedVoltage =
                 Volts.of(turnMotor.getBusVoltage()).times(turnMotor.getAppliedOutput());
         inputs.turnCurrent = Amps.of(turnMotor.getOutputCurrent());
 
-        setpoint = turnProfile.calculate(0.02, setpoint, goal);
-        inputs.setpoint = goal.position;
+        turnSetpoint = turnProfile.calculate(0.02, turnSetpoint, turnGoal);
+        inputs.turnSetpoint = Rotation2d.fromRadians(turnGoal.position);
         turnPID.setReference(
-                goal.position, ControlType.kPosition, 0, turnFF.calculate(setpoint.velocity));
+                turnGoal.position, ControlType.kPosition, 0, turnFF.calculate(turnSetpoint.velocity));
     }
 
     @Override
     public void setTurnPosition(Rotation2d position) {
-        goal =
+        turnGoal =
                 new TrapezoidProfile.State(
                         position.getRadians() + chassisAngularOffset.getRadians(), 0);
     }
 
     @Override
-    public void setDriveVoltage(Measure<Voltage> voltage) {
-        voltage =
-                (chassisAngularOffset.getRadians() == 0
-                                || chassisAngularOffset.getRadians() == Math.PI)
-                        ? voltage.times(-1)
-                        : voltage;
-        driveMotor.setVoltage(voltage.in(Volts));
+    public void setDriveVelocity(Measure<Velocity<Distance>> velocity) {
+        driveSetpoint = (chassisAngularOffset.getRadians() == 0
+                                || chassisAngularOffset.getRadians() == Math.PI) ? velocity.times(-1) : velocity;
+        drivePID.setReference(driveSetpoint.in(MetersPerSecond), ControlType.kVelocity);
     }
-
-    @Override
-    public void setTurnVoltage(Measure<Voltage> voltage) {}
 }

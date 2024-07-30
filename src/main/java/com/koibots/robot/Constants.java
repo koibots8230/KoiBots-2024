@@ -96,7 +96,7 @@ public class Constants {
 
         public static final double DRIVE_TURN_KS = 0.0;
         public static final PIDConstantsIO TURN_PID_CONSTANTS =
-                new PIDConstantsIO(2, 0, 0.1, 35, 0, 0);
+                new PIDConstantsIO(2, 0, 0, 35, 0, 0);
         public static final PIDConstantsIO DRIVE_PID_CONSTANTS =
                 new PIDConstantsIO(5.5208e-10, 0, 0, 40, 0, 0);
         public static final FeedforwardConstantsIO DRIVE_FEEDFORWARD_CONSTANTS =
@@ -269,7 +269,7 @@ public class Constants {
 
         public static final Measure<Distance> MAX_MEASUREMENT_DIFFERENCE = Meters.of(1);
 
-        public static final Matrix<N3, N1> STDEVS = VecBuilder.fill(1, 1, Math.PI);
+        public static final Matrix<N3, N1> STDEVS = VecBuilder.fill(1.25, 1.25,  50 * Math.PI);
     }
 
     public static class AutoConstants {
