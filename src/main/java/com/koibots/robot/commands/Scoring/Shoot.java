@@ -9,7 +9,8 @@ import static edu.wpi.first.units.Units.*;
 import com.koibots.robot.Constants.*;
 import com.koibots.robot.RobotContainer;
 import com.koibots.robot.commands.Shooter.SpinUpShooter;
-import com.koibots.robot.commands.Swerve.AutoAlign;
+import com.pathplanner.lib.auto.AutoBuilder;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.*;
@@ -18,19 +19,15 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
-import java.util.Arrays;
 
 public class Shoot extends SequentialCommandGroup {
 
     public Shoot() {
-        Pose2d nearestPoint = new Pose2d(1000, 1000, new Rotation2d());
-        int whichDistance = 0;
 
-        for (int a = 0; a < AlignConstants.SHOOT_DISTANCES_METERS.size(); a++) {
-            Pose2d nearestPointOnCircle = // Looks complicated, but is just this https://math.stackexchange.com/a/127615
+            Pose2d nearestPoint = // Looks complicated, but is just this https://math.stackexchange.com/a/127615
                     new Pose2d(
                             AlignConstants.SPEAKER_POSITION.getX()
-                                    + (AlignConstants.SHOOT_DISTANCES_METERS.get(a).in(Meters)
+                                    + (AlignConstants.SHOOT_DISTANCES_METERS.in(Meters)
                                             * ((Swerve.get().getEstimatedPose().getX()
                                                             - AlignConstants.SPEAKER_POSITION.getX())
                                                     / Math.sqrt(
@@ -41,7 +38,7 @@ public class Shoot extends SequentialCommandGroup {
                                                                     Swerve.get().getEstimatedPose().getY()
                                                                             - AlignConstants.SPEAKER_POSITION.getY(), 2)))),
                             AlignConstants.SPEAKER_POSITION.getY()
-                                    + (AlignConstants.SHOOT_DISTANCES_METERS.get(a).in(Meters)
+                                    + (AlignConstants.SHOOT_DISTANCES_METERS.in(Meters)
                                             * ((Swerve.get().getEstimatedPose().getY()
                                                             - AlignConstants.SPEAKER_POSITION.getY())
                                                     / Math.sqrt(
@@ -52,13 +49,6 @@ public class Shoot extends SequentialCommandGroup {
                                                                     Swerve.get().getEstimatedPose().getY()
                                                                             - AlignConstants.SPEAKER_POSITION.getY(), 2)))),
                             new Rotation2d());
-
-            nearestPoint =
-                    Swerve.get()
-                            .getEstimatedPose()
-                            .nearest(Arrays.asList(nearestPoint, nearestPointOnCircle));
-            whichDistance = (nearestPoint == nearestPointOnCircle) ? a : whichDistance;
-        }
 
         if (Math.abs(Swerve.get().getEstimatedPose().getX() - nearestPoint.getX())
                         < AlignConstants.ALLOWED_DISTANCE_FROM_SHOOT.getX()
@@ -77,16 +67,16 @@ public class Shoot extends SequentialCommandGroup {
                                     - (1.5 * Math.PI)))); // Transforms the angle to be in gyro units
 
             addCommands(
-                    new AutoAlign(nearestPoint, Meters.of(0)),
-                    //new SpinUpShooter(SetpointConstants.SHOOTER_SPEEDS.get(whichDistance).get(0), SetpointConstants.SHOOTER_SPEEDS.get(whichDistance).get(1)),
+                    new ParallelCommandGroup(
+                        AutoBuilder.pathfindToPoseFlipped(nearestPoint, ControlConstants.PATH_CONSTRAINTS, 0),
+                        new InstantCommand(
+                                    () -> Shooter.get().setVelocity(SetpointConstants.SHOOTER_SPEEDS.SPEAKER.topSpeed, SetpointConstants.SHOOTER_SPEEDS.SPEAKER.bottomSpeed), Shooter.get())
+                    ),
                     new ParallelRaceGroup(
-                            new InstantCommand(
-                                    () ->
-                                            Indexer.get()
-                                                    .setVelocity(
-                                                            SetpointConstants.SHOOTER_INDEXER_SPEED),
-                                    Indexer.get()),
-                            new WaitCommand(2)),
+                        new InstantCommand(
+                                    () -> Indexer.get().setVelocity(SetpointConstants.SHOOTER_INDEXER_SPEED), Indexer.get()),
+                        new WaitCommand(1)
+                    ),
                     new ParallelCommandGroup(
                             new InstantCommand(
                                     () -> Shooter.get().setVelocity(RPM.of(0), RPM.of(0)), Shooter.get()),

@@ -11,10 +11,9 @@ import com.koibots.robot.Constants.VisionConstants;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.numbers.*;
 import edu.wpi.first.networktables.DoubleArraySubscriber;
 import edu.wpi.first.networktables.IntegerSubscriber;
@@ -23,14 +22,14 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.PubSubOption;
 import edu.wpi.first.networktables.TimestampedDoubleArray;
 import edu.wpi.first.networktables.TimestampedInteger;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
+
+import org.littletonrobotics.junction.Logger;
 
 public class Vision extends SubsystemBase {
 
@@ -71,15 +70,6 @@ public class Vision extends SubsystemBase {
                                     "2024-crescendo.json"));
         } catch (IOException e) {
             System.err.println("ERROR: Could not find apriltag field layout!");
-        }
-
-        if (DriverStation.getAlliance().isPresent()) {
-            if (DriverStation.getAlliance().get() == Alliance.Red) {
-                layout.setOrigin(
-                        new Pose3d(layout.getFieldLength(), 0, 0, new Rotation3d(0, 0, Math.PI)));
-            }
-        } else {
-            System.err.println("ERROR: Could not determine alliance!");
         }
     }
 
@@ -171,9 +161,17 @@ public class Vision extends SubsystemBase {
                                         Math.pow(pose.getX() - Swerve.get().getEstimatedPose().getX(), 2)
                                             + Math.pow(pose.getY() - Swerve.get().getEstimatedPose().getY(), 2))
                                     < VisionConstants.MAX_MEASUREMENT_DIFFERENCE.in(Meters))) { //TODO: test this with robot movement (is it too low?)
-                        Swerve.get().addVisionMeasurement(pose, Microseconds.of(ids[b].serverTime));
+                        // spotless:on
+                        Logger.recordOutput("Raw Vision", pose);
+                        Swerve.get()
+                                .addVisionMeasurement(
+                                        pose,
+                                        Microseconds.of(ids[b].serverTime),
+                                        VecBuilder.fill(
+                                                Math.pow(1 + Math.hypot(tvec[b].value[0], tvec[b].value[2]), VisionConstants.TRANSLATION_STDEV_ORDER) * VisionConstants.TRANSLATION_STDEV_SCALAR,
+                                                Math.pow(1 + Math.hypot(tvec[b].value[0], tvec[b].value[2]), VisionConstants.TRANSLATION_STDEV_ORDER) * VisionConstants.TRANSLATION_STDEV_SCALAR,
+                                                VisionConstants.ROTATION_STDEV));
                     }
-                    // spotless:on
                 }
             }
         }

@@ -17,11 +17,15 @@ import com.koibots.robot.commands.Swerve.FieldOrientedDrive;
 import com.koibots.robot.commands.Swerve.TestDrive;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.path.PathPlannerTrajectory;
+
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
@@ -36,7 +40,7 @@ public class RobotContainer {
 
     List<SendableChooser<Boolean>> modulesEnabled = new ArrayList<>();
 
-    SendableChooser<Command> autos = new SendableChooser<>();
+    SendableChooser<String> autos = new SendableChooser<>();
 
     public RobotContainer() {
         registerAutos();
@@ -60,7 +64,7 @@ public class RobotContainer {
                         SetpointConstants.SHOOTER_SPEEDS.SPEAKER.topSpeed,
                         SetpointConstants.SHOOTER_SPEEDS.SPEAKER.bottomSpeed,
                         false));
-        NamedCommands.registerCommand("Intake", new IntakeCommand(false));
+        NamedCommands.registerCommand("Intake", new IntakeCommand());
         NamedCommands.registerCommand(
                 "Score_Amp",
                 new Shoot(
@@ -77,15 +81,13 @@ public class RobotContainer {
                 () -> false,
                 Swerve.get());
 
-        autos = AutoBuilder.buildAutoChooser();
+        List<String> autoNames = AutoBuilder.getAllAutoNames();
+
+        for (String autoName : autoNames) {
+            autos.addOption(autoName, autoName);
+        }
 
         SmartDashboard.putData("Autos", autos);
-
-        // for (int a = 0; a < AutoCommands.values().length; a++) {
-        //     autos.addOption(AutoCommands.values()[a].name, AutoCommands.values()[a].command);
-        // }
-
-        // SmartDashboard.putData("Autos", autos);
     }
 
     public void configureButtonBindings() {
@@ -102,7 +104,7 @@ public class RobotContainer {
         zero.onTrue(new InstantCommand(() -> Swerve.get().zeroGyro()));
 
         Trigger intake = new Trigger(() -> driveController.getRightTrigger() > 0.15);
-        intake.onTrue(new IntakeCommand(false));
+        intake.onTrue(new IntakeCommand());
         intake.onFalse(
                 new ParallelCommandGroup(
                         new InstantCommand(() -> Intake.get().setVelocity(RPM.of(0)), Intake.get()),
@@ -224,7 +226,8 @@ public class RobotContainer {
     }
 
     public Command getAutonomousRoutine() {
-        return autos.getSelected();
+        Swerve.get().resetOdometry(PathPlannerAuto.getStaringPoseFromAutoFile(autos.getSelected()));
+        return AutoBuilder.buildAuto(autos.getSelected());
     }
 
     public static void rumbleController(double strength) {

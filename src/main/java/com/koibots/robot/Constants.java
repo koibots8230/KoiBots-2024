@@ -14,8 +14,6 @@ import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.ReplanningConfig;
 import com.revrobotics.CANSparkBase.IdleMode;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -98,9 +96,9 @@ public class Constants {
         public static final PIDConstantsIO TURN_PID_CONSTANTS =
                 new PIDConstantsIO(2, 0, 0, 35, 0, 0);
         public static final PIDConstantsIO DRIVE_PID_CONSTANTS =
-                new PIDConstantsIO(5.5208e-10, 0, 0, 40, 0, 0);
+                new PIDConstantsIO(0.51, 0, 0, 40, 0, 0);
         public static final FeedforwardConstantsIO DRIVE_FEEDFORWARD_CONSTANTS =
-                new FeedforwardConstantsIO(0.11386, 2.6819, 0.16507, 0, 2.65, 0);
+                new FeedforwardConstantsIO(0, 0.24, 0, 0, 2.65, 0);
         public static final FeedforwardConstantsIO TURN_FEEDFORWARD_CONSTANTS =
                 new FeedforwardConstantsIO(0, 2, 0, 0, 0, 0);
 
@@ -240,8 +238,7 @@ public class Constants {
 
         public static final Translation2d ALLOWED_DISTANCE_FROM_AMP = new Translation2d(2, 2);
 
-        public static final List<Measure<Distance>> SHOOT_DISTANCES_METERS =
-                Arrays.asList(Meters.of(4.5));
+        public static final Measure<Distance> SHOOT_DISTANCES_METERS = Meters.of(1.541018);
         public static final Pose2d SPEAKER_POSITION = new Pose2d();
 
         public static final Translation2d ALLOWED_DISTANCE_FROM_SHOOT = new Translation2d(2, 2);
@@ -269,7 +266,9 @@ public class Constants {
 
         public static final Measure<Distance> MAX_MEASUREMENT_DIFFERENCE = Meters.of(1);
 
-        public static final Matrix<N3, N1> STDEVS = VecBuilder.fill(1.25, 1.25,  50 * Math.PI);
+        public static final double ROTATION_STDEV = 50 * Math.PI;
+        public static final double TRANSLATION_STDEV_ORDER = 2.75;
+        public static final double TRANSLATION_STDEV_SCALAR = 2.25;
     }
 
     public static class AutoConstants {

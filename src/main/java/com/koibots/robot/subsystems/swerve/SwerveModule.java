@@ -5,13 +5,9 @@ package com.koibots.robot.subsystems.swerve;
 
 import static edu.wpi.first.units.Units.*;
 
-import com.koibots.robot.Constants.ControlConstants;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.littletonrobotics.junction.Logger;
 
 public class SwerveModule {
@@ -39,7 +35,8 @@ public class SwerveModule {
 
         angleSetpoint = state.angle;
         speedSetpoint =
-                optimizedSetpoint.speedMetersPerSecond * inputs.turnSetpoint.minus(inputs.turnPosition).getCos();
+                optimizedSetpoint.speedMetersPerSecond
+                        * inputs.turnSetpoint.minus(io.getTurnRawPosition()).getCos();
 
         io.setTurnPosition(angleSetpoint);
         io.setDriveVelocity(MetersPerSecond.of(speedSetpoint));

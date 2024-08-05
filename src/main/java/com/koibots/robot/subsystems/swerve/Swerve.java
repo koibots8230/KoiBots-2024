@@ -10,6 +10,7 @@ import com.koibots.robot.Constants.DeviceIDs;
 import com.koibots.robot.Constants.RobotConstants;
 import com.koibots.robot.Constants.VisionConstants;
 import com.koibots.robot.Robot;
+import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -17,6 +18,8 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Time;
 import edu.wpi.first.util.sendable.SendableBuilder;
@@ -86,8 +89,6 @@ public class Swerve extends SubsystemBase {
                         })) {
             odometryUpdater.startPeriodic(1.0 / 200); // Run at 200hz
         }
-
-        odometry.setVisionMeasurementStdDevs(VisionConstants.STDEVS);
     }
 
     @Override
@@ -121,8 +122,9 @@ public class Swerve extends SubsystemBase {
         // SmartDashboard.putData(field);
     }
 
-    public void addVisionMeasurement(Pose2d measurement, Measure<Time> timestamp) {
-        odometry.addVisionMeasurement(measurement, timestamp.in(Seconds));
+    public void addVisionMeasurement(
+            Pose2d measurement, Measure<Time> timestamp, Matrix<N3, N1> stdevs) {
+        odometry.addVisionMeasurement(measurement, timestamp.in(Seconds), stdevs);
     }
 
     public void zeroGyro() {

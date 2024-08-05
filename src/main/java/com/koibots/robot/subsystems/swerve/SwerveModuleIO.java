@@ -40,4 +40,8 @@ public interface SwerveModuleIO {
     default void setTurnPosition(Rotation2d position) {}
 
     default void setDriveVelocity(Measure<Velocity<Distance>> velocity) {}
+
+    default Rotation2d getTurnRawPosition() {
+        return new Rotation2d();
+    }
 }

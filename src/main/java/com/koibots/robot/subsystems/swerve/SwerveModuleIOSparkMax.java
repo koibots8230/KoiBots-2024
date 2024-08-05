@@ -25,8 +25,6 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Velocity;
-import edu.wpi.first.units.Voltage;
-import edu.wpi.first.wpilibj.motorcontrol.Spark;
 
 public class SwerveModuleIOSparkMax implements SwerveModuleIO {
     private final CANSparkMax driveMotor;
@@ -155,7 +153,10 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
         turnSetpoint = turnProfile.calculate(0.02, turnSetpoint, turnGoal);
         inputs.turnSetpoint = Rotation2d.fromRadians(turnGoal.position);
         turnPID.setReference(
-                turnGoal.position, ControlType.kPosition, 0, turnFF.calculate(turnSetpoint.velocity));
+                turnGoal.position,
+                ControlType.kPosition,
+                0,
+                turnFF.calculate(turnSetpoint.velocity));
     }
 
     @Override
@@ -167,8 +168,12 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
 
     @Override
     public void setDriveVelocity(Measure<Velocity<Distance>> velocity) {
-        driveSetpoint = (chassisAngularOffset.getRadians() == 0
-                                || chassisAngularOffset.getRadians() == Math.PI) ? velocity.times(-1) : velocity;
-        drivePID.setReference(driveSetpoint.in(MetersPerSecond), ControlType.kVelocity);
+        driveSetpoint = velocity;
+        drivePID.setReference(velocity.in(MetersPerSecond), ControlType.kVelocity);
+    }
+
+    @Override
+    public Rotation2d getTurnRawPosition() {
+        return Rotation2d.fromRadians(turnEncoder.getPosition());
     }
 }
