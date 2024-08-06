@@ -30,6 +30,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,7 +65,7 @@ public class RobotContainer {
                         SetpointConstants.SHOOTER_SPEEDS.SPEAKER.topSpeed,
                         SetpointConstants.SHOOTER_SPEEDS.SPEAKER.bottomSpeed,
                         false));
-        NamedCommands.registerCommand("Intake", new IntakeCommand());
+        NamedCommands.registerCommand("Intake", new ParallelRaceGroup(new IntakeCommand(), new WaitCommand(2)));
         NamedCommands.registerCommand(
                 "Score_Amp",
                 new Shoot(
