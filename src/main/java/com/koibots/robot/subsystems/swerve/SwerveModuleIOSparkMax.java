@@ -94,7 +94,7 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
         } else if (turnId == DeviceIDs.BACK_RIGHT_TURN) {
             chassisAngularOffset =
                     Rotation2d.fromRadians(
-                            Math.PI / 2); // Rotation2d.fromDegrees((3 * Math.PI) / 2);
+                            Math.PI / 2);
         }
         turnMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 8);
 

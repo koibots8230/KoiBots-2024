@@ -6,10 +6,14 @@ package com.koibots.robot.commands.Scoring;
 import static com.koibots.robot.subsystems.Subsystems.*;
 import static edu.wpi.first.units.Units.*;
 
+import java.nio.file.Path;
+
 import com.koibots.robot.Constants.*;
+import com.koibots.lib.util.ShootPosition;
 import com.koibots.robot.RobotContainer;
 import com.koibots.robot.commands.Shooter.SpinUpShooter;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.path.PathPlannerPath;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -22,9 +26,10 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 
 public class Shoot extends SequentialCommandGroup {
 
-    public Shoot() {
-
-            Pose2d nearestPoint = // Looks complicated, but is just this https://math.stackexchange.com/a/127615
+    public Shoot(ShootPosition position) {
+        switch (position) {
+            case SPEAKER:
+                Pose2d nearestPoint = // Looks complicated, but is just this https://math.stackexchange.com/a/127615
                     new Pose2d(
                             AlignConstants.SPEAKER_POSITION.getX()
                                     + (AlignConstants.SHOOT_DISTANCES_METERS.in(Meters)
@@ -69,8 +74,8 @@ public class Shoot extends SequentialCommandGroup {
             addCommands(
                     new ParallelCommandGroup(
                         AutoBuilder.pathfindToPoseFlipped(nearestPoint, ControlConstants.PATH_CONSTRAINTS, 0),
-                        new InstantCommand(
-                                    () -> Shooter.get().setVelocity(SetpointConstants.SHOOTER_SPEEDS.SPEAKER.topSpeed, SetpointConstants.SHOOTER_SPEEDS.SPEAKER.bottomSpeed), Shooter.get())
+                        new SpinUpShooter(
+                                    SetpointConstants.SHOOTER_SPEEDS.SPEAKER.topSpeed, SetpointConstants.SHOOTER_SPEEDS.SPEAKER.bottomSpeed)
                     ),
                     new ParallelRaceGroup(
                         new InstantCommand(
@@ -88,12 +93,38 @@ public class Shoot extends SequentialCommandGroup {
                     new WaitCommand(0.2),
                     new InstantCommand(() -> RobotContainer.rumbleController(0.0)));
         }
+            case AMP:
+            if (Math.abs(Swerve.get().getEstimatedPose().getX() - AlignConstants.AMP_POSITION.getX())
+                        < AlignConstants.ALLOWED_DISTANCE_FROM_AMP.getX()
+                && Math.abs(Swerve.get().getEstimatedPose().getY() - AlignConstants.AMP_POSITION.getY())
+                        < AlignConstants.ALLOWED_DISTANCE_FROM_AMP.getY()) {
+                addCommands(
+                    new ParallelCommandGroup(
+                        AutoBuilder.pathfindToPoseFlipped(AlignConstants.AMP_POSITION, ControlConstants.PATH_CONSTRAINTS, 0),
+                        new SpinUpShooter(
+                                    SetpointConstants.SHOOTER_SPEEDS.AMP.topSpeed, SetpointConstants.SHOOTER_SPEEDS.AMP.bottomSpeed)
+                    ),
+                    AutoBuilder.followPath(PathPlannerPath.fromChoreoTrajectory("ampalign")),
+                    new ParallelCommandGroup(
+                        new InstantCommand(
+                                    () -> Indexer.get().setVelocity(SetpointConstants.SHOOTER_INDEXER_SPEED), Indexer.get()),
+                        new WaitCommand(1)
+                    ),
+                    new ParallelCommandGroup(
+                            new InstantCommand(
+                                    () -> Shooter.get().setVelocity(RPM.of(0), RPM.of(0)), Shooter.get()),
+                            new InstantCommand(
+                                    () -> Indexer.get().setVelocity(RPM.of(0)), Indexer.get())));
+                        } else {
+                            addCommands(
+                            new InstantCommand(() -> RobotContainer.rumbleController(0.4)),
+                            new WaitCommand(0.2),
+                            new InstantCommand(() -> RobotContainer.rumbleController(0.0)));
+                        }
+        }
     }
 
-    public Shoot(Measure<Velocity<Angle>> topSpeed, Measure<Velocity<Angle>> bottomSpeed, boolean doPathing) {
-        if (doPathing) {
-            addCommands(new Shoot());
-        } else {
+    public Shoot(Measure<Velocity<Angle>> topSpeed, Measure<Velocity<Angle>> bottomSpeed) {
             addCommands(
                     new SpinUpShooter(topSpeed, bottomSpeed),
                     new WaitCommand(0.5),
@@ -110,5 +141,4 @@ public class Shoot extends SequentialCommandGroup {
                             new InstantCommand(
                                     () -> Indexer.get().setVelocity(RPM.of(0)), Indexer.get())));
         }
-    }
 }

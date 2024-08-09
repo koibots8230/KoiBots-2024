@@ -16,7 +16,9 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.*;
 import edu.wpi.first.networktables.DoubleArraySubscriber;
+import edu.wpi.first.networktables.DoubleArrayTopic;
 import edu.wpi.first.networktables.IntegerSubscriber;
+import edu.wpi.first.networktables.IntegerTopic;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.PubSubOption;
@@ -28,7 +30,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
-
 import org.littletonrobotics.junction.Logger;
 
 public class Vision extends SubsystemBase {
@@ -43,22 +44,25 @@ public class Vision extends SubsystemBase {
         idSubscribers = new IntegerSubscriber[VisionConstants.ACTIVE_CAMERAS];
         NetworkTable table = NetworkTableInstance.getDefault().getTable("fisheye");
         for (int a = 0; a < VisionConstants.ACTIVE_CAMERAS; a++) {
+            IntegerTopic topic = table.getIntegerTopic(VisionConstants.TOPIC_NAMES[a][2]);
+            topic.setCached(true);
             idSubscribers[a] =
-                    table.getIntegerTopic(VisionConstants.TOPIC_NAMES[a][2])
-                            .subscribe(
-                                    VisionConstants.ID_DEFAULT_VALUE,
-                                    PubSubOption.pollStorage(10),
-                                    PubSubOption.sendAll(true),
-                                    PubSubOption.keepDuplicates(true));
+                    topic.subscribe(
+                            VisionConstants.ID_DEFAULT_VALUE,
+                            PubSubOption.pollStorage(10),
+                            PubSubOption.sendAll(true),
+                            PubSubOption.keepDuplicates(true));
 
             for (int b = 0; b < 2; b++) {
+                DoubleArrayTopic topic2 =
+                        table.getDoubleArrayTopic(VisionConstants.TOPIC_NAMES[a][b]);
+                topic2.setCached(true);
                 vecSubscribers[a][b] =
-                        table.getDoubleArrayTopic(VisionConstants.TOPIC_NAMES[a][b])
-                                .subscribe(
-                                        VisionConstants.VECTOR_DEFAULT_VALUE,
-                                        PubSubOption.pollStorage(10),
-                                        PubSubOption.sendAll(true),
-                                        PubSubOption.keepDuplicates(true));
+                        topic2.subscribe(
+                                VisionConstants.VECTOR_DEFAULT_VALUE,
+                                PubSubOption.pollStorage(10),
+                                PubSubOption.sendAll(true),
+                                PubSubOption.keepDuplicates(true));
             }
         }
         try {
@@ -168,8 +172,22 @@ public class Vision extends SubsystemBase {
                                         pose,
                                         Microseconds.of(ids[b].serverTime),
                                         VecBuilder.fill(
-                                                Math.pow(1 + Math.hypot(tvec[b].value[0], tvec[b].value[2]), VisionConstants.TRANSLATION_STDEV_ORDER) * VisionConstants.TRANSLATION_STDEV_SCALAR,
-                                                Math.pow(1 + Math.hypot(tvec[b].value[0], tvec[b].value[2]), VisionConstants.TRANSLATION_STDEV_ORDER) * VisionConstants.TRANSLATION_STDEV_SCALAR,
+                                                Math.pow(
+                                                                1
+                                                                        + Math.hypot(
+                                                                                tvec[b].value[0],
+                                                                                tvec[b].value[2]),
+                                                                VisionConstants
+                                                                        .TRANSLATION_STDEV_ORDER)
+                                                        * VisionConstants.TRANSLATION_STDEV_SCALAR,
+                                                Math.pow(
+                                                                1
+                                                                        + Math.hypot(
+                                                                                tvec[b].value[0],
+                                                                                tvec[b].value[2]),
+                                                                VisionConstants
+                                                                        .TRANSLATION_STDEV_ORDER)
+                                                        * VisionConstants.TRANSLATION_STDEV_SCALAR,
                                                 VisionConstants.ROTATION_STDEV));
                     }
                 }

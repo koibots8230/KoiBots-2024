@@ -7,6 +7,7 @@ import static com.koibots.robot.subsystems.Subsystems.*;
 import static edu.wpi.first.units.Units.*;
 
 import com.koibots.lib.controls.EightBitDo;
+import com.koibots.lib.util.ShootPosition;
 import com.koibots.robot.Constants.*;
 import com.koibots.robot.commands.Intake.IntakeCommand;
 import com.koibots.robot.commands.Intake.IntakeShooter;
@@ -18,6 +19,7 @@ import com.koibots.robot.commands.Swerve.TestDrive;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.PathPlannerTrajectory;
 
 import edu.wpi.first.wpilibj.GenericHID;
@@ -63,15 +65,13 @@ public class RobotContainer {
                 "Shoot",
                 new Shoot(
                         SetpointConstants.SHOOTER_SPEEDS.SPEAKER.topSpeed,
-                        SetpointConstants.SHOOTER_SPEEDS.SPEAKER.bottomSpeed,
-                        false));
-        NamedCommands.registerCommand("Intake", new ParallelRaceGroup(new IntakeCommand(), new WaitCommand(2)));
+                        SetpointConstants.SHOOTER_SPEEDS.SPEAKER.bottomSpeed));
+        NamedCommands.registerCommand("Intake", new ParallelRaceGroup(new IntakeCommand(), new WaitCommand(5)));
         NamedCommands.registerCommand(
                 "Score_Amp",
                 new Shoot(
                         SetpointConstants.SHOOTER_SPEEDS.AMP.topSpeed,
-                        SetpointConstants.SHOOTER_SPEEDS.AMP.bottomSpeed,
-                        false));
+                        SetpointConstants.SHOOTER_SPEEDS.AMP.bottomSpeed));
 
         AutoBuilder.configureHolonomic(
                 Swerve.get()::getEstimatedPose,
@@ -204,14 +204,8 @@ public class RobotContainer {
                                 () -> Shooter.get().setVelocity(RPM.of(0), RPM.of(0)),
                                 Shooter.get())));
 
-        Trigger LEDS1 = new Trigger(() -> operatorPad.getRawButton(11));
-        LEDS1.onTrue(new InstantCommand(() -> LEDs.get().send_to_rp2040(1)));
-
-        Trigger LEDS2 = new Trigger(() -> operatorPad.getRawButton(12));
-        LEDS2.onTrue(new InstantCommand(() -> LEDs.get().send_to_rp2040(2)));
-
-        Trigger LEDS3 = new Trigger(() -> operatorPad.getRawButton(13));
-        LEDS3.onTrue(new InstantCommand(() -> LEDs.get().send_to_rp2040(4)));
+        Trigger alignAmp = new Trigger(() -> operatorPad.getRawButton(11));
+        alignAmp.onTrue(new Shoot(ShootPosition.AMP));
     }
 
     public void configureTestBinds() {

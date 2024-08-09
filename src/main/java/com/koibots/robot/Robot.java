@@ -5,7 +5,7 @@ package com.koibots.robot;
 
 import static com.koibots.robot.subsystems.Subsystems.*;
 
-import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -29,7 +29,7 @@ public class Robot extends LoggedRobot {
         Logger.recordMetadata("RobotName", "Swerve Chassis");
         Logger.addDataReceiver(new WPILOGWriter());
 
-        //CameraServer.startAutomaticCapture();
+        // CameraServer.startAutomaticCapture();
 
         if (!DriverStation.isFMSAttached()) {
             Logger.addDataReceiver(new NT4Publisher());
@@ -52,6 +52,7 @@ public class Robot extends LoggedRobot {
 
         LEDs.get().send_to_rp2040(1);
         Vision.get();
+        Swerve.get().resetOdometry(new Pose2d());
     }
 
     @Override
