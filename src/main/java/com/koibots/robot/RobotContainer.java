@@ -9,6 +9,7 @@ import static edu.wpi.first.units.Units.*;
 import com.koibots.lib.controls.EightBitDo;
 import com.koibots.lib.util.ShootPosition;
 import com.koibots.robot.Constants.*;
+import com.koibots.robot.autos.StayPut;
 import com.koibots.robot.commands.Intake.IntakeCommand;
 import com.koibots.robot.commands.Intake.IntakeShooter;
 import com.koibots.robot.commands.Scoring.FeedNote;
@@ -19,15 +20,12 @@ import com.koibots.robot.commands.Swerve.TestDrive;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
-import com.pathplanner.lib.path.PathPlannerPath;
-import com.pathplanner.lib.path.PathPlannerTrajectory;
-
+import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
@@ -66,12 +64,16 @@ public class RobotContainer {
                 new Shoot(
                         SetpointConstants.SHOOTER_SPEEDS.SPEAKER.topSpeed,
                         SetpointConstants.SHOOTER_SPEEDS.SPEAKER.bottomSpeed));
-        NamedCommands.registerCommand("Intake", new ParallelRaceGroup(new IntakeCommand(), new WaitCommand(5)));
+        NamedCommands.registerCommand(
+                "Intake", new ParallelRaceGroup(new IntakeCommand(), new WaitCommand(5)));
         NamedCommands.registerCommand(
                 "Score_Amp",
                 new Shoot(
                         SetpointConstants.SHOOTER_SPEEDS.AMP.topSpeed,
                         SetpointConstants.SHOOTER_SPEEDS.AMP.bottomSpeed));
+        NamedCommands.registerCommand("Stay Put", new StayPut());
+
+        PathPlannerLogging.setLogTargetPoseCallback(Swerve.get()::setPathingGoal);
 
         AutoBuilder.configureHolonomic(
                 Swerve.get()::getEstimatedPose,
@@ -221,8 +223,12 @@ public class RobotContainer {
     }
 
     public Command getAutonomousRoutine() {
-        Swerve.get().resetOdometry(PathPlannerAuto.getStaringPoseFromAutoFile(autos.getSelected()));
-        return AutoBuilder.buildAuto(autos.getSelected());
+        if (autos.getSelected() != null) {
+            Swerve.get().resetOdometry(PathPlannerAuto.getStaringPoseFromAutoFile(autos.getSelected()));
+            return AutoBuilder.buildAuto(autos.getSelected());
+        } else {
+            return new InstantCommand();
+        }
     }
 
     public static void rumbleController(double strength) {

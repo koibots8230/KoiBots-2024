@@ -33,14 +33,14 @@ public class SwerveModule {
     public SwerveModuleState setState(SwerveModuleState state) {
         var optimizedSetpoint = SwerveModuleState.optimize(state, getAngle());
 
-        angleSetpoint = state.angle;
+        angleSetpoint = optimizedSetpoint.angle;
+
         speedSetpoint =
                 optimizedSetpoint.speedMetersPerSecond
                         * inputs.turnSetpoint.minus(io.getTurnRawPosition()).getCos();
-
+                        
         io.setTurnPosition(angleSetpoint);
         io.setDriveVelocity(MetersPerSecond.of(speedSetpoint));
-
         return optimizedSetpoint;
     }
 

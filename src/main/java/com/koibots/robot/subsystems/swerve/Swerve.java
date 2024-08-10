@@ -24,6 +24,7 @@ import edu.wpi.first.units.Time;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.util.List;
 import org.littletonrobotics.junction.Logger;
 
 public class Swerve extends SubsystemBase {
@@ -33,6 +34,8 @@ public class Swerve extends SubsystemBase {
     SwerveDrivePoseEstimator odometry;
 
     Rotation2d[] stopAngles;
+
+    private Pose2d pathingGoal;
 
     public Swerve() {
         if (Robot.isReal()) {
@@ -105,16 +108,12 @@ public class Swerve extends SubsystemBase {
         swerveModules[2].periodic();
         swerveModules[3].periodic();
 
-        double[] statesDegrees = new double[8];
         double[] statesRadians = new double[8];
         for (int i = 0; i < 4; i++) {
-            statesDegrees[i * 2] = swerveModules[i].getAngle().getDegrees();
-            statesDegrees[(i * 2) + 1] = swerveModules[i].getVelocityMetersPerSec();
             statesRadians[i * 2] = swerveModules[i].getAngle().getRadians();
             statesRadians[(i * 2) + 1] = swerveModules[i].getVelocityMetersPerSec();
         }
 
-        Logger.recordOutput("SwerveStates/Measured", statesDegrees);
         Logger.recordOutput("SwerveStates/Measured", statesRadians);
 
         // field.setRobotPose(getEstimatedPose());
@@ -277,5 +276,13 @@ public class Swerve extends SubsystemBase {
                 "Back Right Velocity", () -> measuredStates[3].speedMetersPerSecond, null);
 
         builder.addDoubleProperty("Robot Angle", () -> gyroInputs.yawPosition.getDegrees(), null);
+    }
+
+    public void setPathingGoal(Pose2d goal) {
+        pathingGoal = goal;
+    }
+
+    public Pose2d getPathingGoal() {
+        return pathingGoal;
     }
 }

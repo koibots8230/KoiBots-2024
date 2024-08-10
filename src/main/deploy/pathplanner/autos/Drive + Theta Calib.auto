@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 3.596176650883989e-27,
-      "y": 6.543402973624745e-27
+      "x": 2.8774246669914075e-27,
+      "y": 3.240918365352477e-27
     },
-    "rotation": -3.507492957912798e-24
+    "rotation": -1.8055239040295493e-24
   },
   "command": {
     "type": "sequential",
@@ -15,6 +15,12 @@
           "type": "path",
           "data": {
             "pathName": "drivethetacalib.1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Stay Put"
           }
         }
       ]

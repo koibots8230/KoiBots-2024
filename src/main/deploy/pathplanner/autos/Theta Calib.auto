@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 3.795596326508803e-28,
-      "y": 3.0656467743407395e-28
+      "x": -4.132327296524676e-29,
+      "y": -1.6531447176815236e-28
     },
-    "rotation": -2.9068040522837155e-22
+    "rotation": 6.426342932741714e-22
   },
   "command": {
     "type": "sequential",
@@ -15,6 +15,12 @@
           "type": "path",
           "data": {
             "pathName": "thetacalib.1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Stay Put"
           }
         }
       ]

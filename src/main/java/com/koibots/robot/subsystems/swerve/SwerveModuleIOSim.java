@@ -58,7 +58,7 @@ public class SwerveModuleIOSim implements SwerveModuleIO {
     public void updateInputs(SwerveModuleInputs inputs) {
         driveSim.update(LOOP_PERIOD_SECS);
         turnSim.update(LOOP_PERIOD_SECS);
-
+        inputs.driveSetpoint = driveSetpoint;
         inputs.drivePosition =
                 RobotConstants.DRIVE_WHEELS.radius.times(driveSim.getAngularPositionRad());
         inputs.driveVelocity =
@@ -77,16 +77,17 @@ public class SwerveModuleIOSim implements SwerveModuleIO {
         driveSim.setInputVoltage(inputs.driveAppliedVoltage.in(Volts));
 
         inputs.turnPosition =
-                new Rotation2d(turnSim.getAngularPositionRad() % (2 * Math.PI))
-                        .minus(Rotation2d.fromRadians(Math.PI));
+                new Rotation2d(turnSim.getAngularPositionRad() % (2 * Math.PI));
         inputs.turnVelocity = RadiansPerSecond.of(turnSim.getAngularVelocityRadPerSec());
         inputs.turnCurrent = Amps.of(turnSim.getCurrentDrawAmps());
+
+        inputs.turnSetpoint = turnSetpoint;
 
         inputs.turnAppliedVoltage =
                 Volts.of(
                         turnFeedback.calculate(
                                 inputs.turnPosition.getRadians(), turnSetpoint.getRadians()));
-        turnSim.setInputVoltage(inputs.turnAppliedVoltage.in(Volts));
+        //turnSim.setInputVoltage(inputs.turnAppliedVoltage.in(Volts));
     }
 
     @Override
@@ -97,10 +98,11 @@ public class SwerveModuleIOSim implements SwerveModuleIO {
     @Override
     public void setTurnPosition(Rotation2d position) {
         turnSetpoint = position;
+        turnSim.setState(position.getRadians(), 0);
     }
 
     @Override
     public Rotation2d getTurnRawPosition() {
-        return new Rotation2d(turnSim.getAngularPositionRad() % (2 * Math.PI));
+        return turnSetpoint;
     }
 }

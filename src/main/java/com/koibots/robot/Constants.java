@@ -149,13 +149,14 @@ public class Constants {
         // =====================Pathplanner=====================
 
         public static final PIDConstantsIO TRANSLATION_PID_CONSTANTS =
-                new PIDConstantsIO(5.4, 0, 0, 0.0005, 0, 0);
+                new PIDConstantsIO(5.4, 0, 0, 40, 0, 0);
         public static final PIDConstantsIO ROTATION_PID_CONSTANTS =
-                new PIDConstantsIO(3.55, 0, 0, 0.0005, 0, 0);
+                new PIDConstantsIO(3.55, 0, 0, 30, 0, 0);
 
-        public static final PIDConstantsIO X_PID_CONSTANTS =
-                new PIDConstantsIO(1.65, 0, 0, 0, 0, 0);
-        public static final PIDConstantsIO Y_PID_CONSTANTS = new PIDConstantsIO(1.5, 0, 0, 0, 0, 0);
+        public static final PIDConstantsIO STAY_PUT_TRANSLATION_PID_CONSTANTS =
+                new PIDConstantsIO(0, 0, 0, 3, 0, 0);
+        public static final PIDConstantsIO STAY_PUT_ROTATION_PID_CONSTANTS =
+                new PIDConstantsIO(0, 0, 0, 25, 0, 0);
 
         public static final Measure<Distance> REPLANNING_ERROR_THRESHOLD = Inches.of(6);
         public static final Measure<Distance> REPLANNING_ERROR_SPIKE_THRESHOLD = Inches.of(4);
@@ -232,7 +233,8 @@ public class Constants {
     }
 
     public static class AlignConstants {
-        public static final Pose2d AMP_POSITION = new Pose2d(1.8915, 7.5, Rotation2d.fromRadians(-Math.PI/2));
+        public static final Pose2d AMP_POSITION =
+                new Pose2d(1.8915, 7.5, Rotation2d.fromRadians(-Math.PI / 2));
 
         public static final Translation2d ALLOWED_DISTANCE_FROM_AMP = new Translation2d(2, 2);
 
