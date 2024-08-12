@@ -9,6 +9,7 @@ import static edu.wpi.first.units.Units.*;
 import java.nio.file.Path;
 
 import com.koibots.robot.Constants.*;
+import com.koibots.robot.autos.StayPut;
 import com.koibots.lib.util.ShootPosition;
 import com.koibots.robot.RobotContainer;
 import com.koibots.robot.commands.Shooter.SpinUpShooter;
@@ -94,21 +95,23 @@ public class Shoot extends SequentialCommandGroup {
                     new InstantCommand(() -> RobotContainer.rumbleController(0.0)));
         }
             case AMP:
-            if (Math.abs(Swerve.get().getEstimatedPose().getX() - AlignConstants.AMP_POSITION.getX())
-                        < AlignConstants.ALLOWED_DISTANCE_FROM_AMP.getX()
-                && Math.abs(Swerve.get().getEstimatedPose().getY() - AlignConstants.AMP_POSITION.getY())
-                        < AlignConstants.ALLOWED_DISTANCE_FROM_AMP.getY()) {
+            if (Math.hypot(Swerve.get().getEstimatedPose().getX() - AlignConstants.AMP_POSITION.getX(),
+                 Swerve.get().getEstimatedPose().getY() - AlignConstants.AMP_POSITION.getY()) < AlignConstants.ALLOWED_DISTANCE_FROM_AMP.in(Meters)) {
                 addCommands(
                     new ParallelCommandGroup(
                         AutoBuilder.pathfindToPoseFlipped(AlignConstants.AMP_POSITION, ControlConstants.PATH_CONSTRAINTS, 0),
                         new SpinUpShooter(
                                     SetpointConstants.SHOOTER_SPEEDS.AMP.topSpeed, SetpointConstants.SHOOTER_SPEEDS.AMP.bottomSpeed)
                     ),
-                    AutoBuilder.followPath(PathPlannerPath.fromChoreoTrajectory("ampalign")),
-                    new ParallelCommandGroup(
-                        new InstantCommand(
-                                    () -> Indexer.get().setVelocity(SetpointConstants.SHOOTER_INDEXER_SPEED), Indexer.get()),
-                        new WaitCommand(1)
+                    new ParallelRaceGroup(
+                        new StayPut(),
+                        new SequentialCommandGroup(
+                            new WaitCommand(1),
+                            new ParallelCommandGroup(
+                                new InstantCommand(
+                                            () -> Indexer.get().setVelocity(SetpointConstants.SHOOTER_INDEXER_SPEED), Indexer.get()),
+                                new WaitCommand(1)
+                            ))
                     ),
                     new ParallelCommandGroup(
                             new InstantCommand(

@@ -33,7 +33,7 @@ public class SwerveModule {
     public SwerveModuleState setState(SwerveModuleState state) {
         var optimizedSetpoint = SwerveModuleState.optimize(state, getAngle());
 
-        angleSetpoint = optimizedSetpoint.angle;
+        angleSetpoint = state.angle;
 
         speedSetpoint =
                 optimizedSetpoint.speedMetersPerSecond

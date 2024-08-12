@@ -151,12 +151,12 @@ public class Constants {
         public static final PIDConstantsIO TRANSLATION_PID_CONSTANTS =
                 new PIDConstantsIO(5.4, 0, 0, 40, 0, 0);
         public static final PIDConstantsIO ROTATION_PID_CONSTANTS =
-                new PIDConstantsIO(3.55, 0, 0, 30, 0, 0);
+                new PIDConstantsIO(3.5, 0, 0, 30, 0, 0);
 
         public static final PIDConstantsIO STAY_PUT_TRANSLATION_PID_CONSTANTS =
-                new PIDConstantsIO(0, 0, 0, 3, 0, 0);
+                new PIDConstantsIO(4, 0, 0, 3, 0, 0);
         public static final PIDConstantsIO STAY_PUT_ROTATION_PID_CONSTANTS =
-                new PIDConstantsIO(0, 0, 0, 25, 0, 0);
+                new PIDConstantsIO(8, 0, 0, 25, 0, 0);
 
         public static final Measure<Distance> REPLANNING_ERROR_THRESHOLD = Inches.of(6);
         public static final Measure<Distance> REPLANNING_ERROR_SPIKE_THRESHOLD = Inches.of(4);
@@ -194,7 +194,7 @@ public class Constants {
 
         public enum SHOOTER_SPEEDS {
             SPEAKER(Arrays.asList(RPM.of(3850), RPM.of(3850))),
-            AMP(Arrays.asList(RPM.of(350), RPM.of(1200))),
+            AMP(Arrays.asList(RPM.of(300), RPM.of(1000))),
             INTAKE(Arrays.asList(RPM.of(-800), RPM.of(-602))),
             REVERSE(Arrays.asList(RPM.of(-400), RPM.of(-400))),
             IDLE(Arrays.asList(RPM.of(500), RPM.of(500)));
@@ -223,7 +223,7 @@ public class Constants {
         public static final Measure<Velocity<Angle>> MAX_ANGULAR_VELOCITY =
                 RadiansPerSecond.of(2 * PI);
         public static final Measure<Velocity<Velocity<Distance>>> MAX_LINEAR_ACCELERATION =
-                MetersPerSecondPerSecond.of(2.25);
+                MetersPerSecondPerSecond.of(2);
         public static final Measure<Velocity<Velocity<Angle>>> MAX_ANGULAR_ACCELERATION =
                 RadiansPerSecond.of(4 * Math.PI).per(Second);
 
@@ -234,9 +234,9 @@ public class Constants {
 
     public static class AlignConstants {
         public static final Pose2d AMP_POSITION =
-                new Pose2d(1.8915, 7.5, Rotation2d.fromRadians(-Math.PI / 2));
+                new Pose2d(1.88, 7.73, Rotation2d.fromRadians(-Math.PI / 2));
 
-        public static final Translation2d ALLOWED_DISTANCE_FROM_AMP = new Translation2d(2, 2);
+        public static final Measure<Distance> ALLOWED_DISTANCE_FROM_AMP = Meters.of(2);
 
         public static final Measure<Distance> SHOOT_DISTANCES_METERS = Meters.of(1.541018);
         public static final Pose2d SPEAKER_POSITION = new Pose2d();
@@ -264,11 +264,11 @@ public class Constants {
         public static final double[] VECTOR_DEFAULT_VALUE = {0};
         public static final int ID_DEFAULT_VALUE = 0;
 
-        public static final Measure<Distance> MAX_MEASUREMENT_DIFFERENCE = Meters.of(0.9);
+        public static final Measure<Distance> MAX_MEASUREMENT_DIFFERENCE = Meters.of(1.5);
 
         public static final double ROTATION_STDEV = 50 * Math.PI;
-        public static final double TRANSLATION_STDEV_ORDER = 2.75;
-        public static final double TRANSLATION_STDEV_SCALAR = 2.25;
+        public static final double TRANSLATION_STDEV_ORDER = 2;
+        public static final double TRANSLATION_STDEV_SCALAR = 2;
     }
 
     public static class AutoConstants {

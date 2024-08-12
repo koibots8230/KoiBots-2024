@@ -29,6 +29,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -65,7 +66,7 @@ public class RobotContainer {
                         SetpointConstants.SHOOTER_SPEEDS.SPEAKER.topSpeed,
                         SetpointConstants.SHOOTER_SPEEDS.SPEAKER.bottomSpeed));
         NamedCommands.registerCommand(
-                "Intake", new ParallelRaceGroup(new IntakeCommand(), new WaitCommand(5)));
+                "Intake", new WaitCommand(0.5));
         NamedCommands.registerCommand(
                 "Score_Amp",
                 new Shoot(
@@ -208,6 +209,10 @@ public class RobotContainer {
 
         Trigger alignAmp = new Trigger(() -> operatorPad.getRawButton(11));
         alignAmp.onTrue(new Shoot(ShootPosition.AMP));
+
+        Trigger printThing = new Trigger(() -> operatorPad.getRawButton(12));
+        printThing.onTrue(new InstantCommand(() -> System.out.println(Math.hypot(Swerve.get().getEstimatedPose().getX() - AlignConstants.AMP_POSITION.getX(),
+                 Swerve.get().getEstimatedPose().getY() - AlignConstants.AMP_POSITION.getY()))));
     }
 
     public void configureTestBinds() {
