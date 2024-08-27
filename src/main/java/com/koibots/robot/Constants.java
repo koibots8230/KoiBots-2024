@@ -94,13 +94,15 @@ public class Constants {
 
         public static final double DRIVE_TURN_KS = 0.0;
         public static final PIDConstantsIO TURN_PID_CONSTANTS =
-                new PIDConstantsIO(3.4, 0, 0, 35, 0, 0);
+                // new PIDConstantsIO(3.4, 0, 0, 35, 0, 0); // Rubber
+                new PIDConstantsIO(3.4, 0, 0, 35, 0, 0); // TPU
         public static final PIDConstantsIO DRIVE_PID_CONSTANTS =
                 new PIDConstantsIO(0.3, 0, 0, 40, 0, 0);
         public static final FeedforwardConstantsIO DRIVE_FEEDFORWARD_CONSTANTS =
                 new FeedforwardConstantsIO(0, 0.24, 0, 0, 2.65, 0);
         public static final FeedforwardConstantsIO TURN_FEEDFORWARD_CONSTANTS =
-                new FeedforwardConstantsIO(0.2, 0.5, 0, 0, 0, 0);
+                // new FeedforwardConstantsIO(0.2, 0.5, 0, 0, 0, 0); // Rubber
+                new FeedforwardConstantsIO(0.22, 0.5, 0, 0, 0, 0); // TPU
 
         public static final double DEADBAND = 0.025;
 
@@ -265,6 +267,7 @@ public class Constants {
         public static final int ID_DEFAULT_VALUE = 0;
 
         public static final Measure<Distance> MAX_MEASUREMENT_DIFFERENCE = Meters.of(1.5);
+        public static final Rotation2d MAX_ANGLE_DIFFERENCE = Rotation2d.fromDegrees(10);
 
         public static final double ROTATION_STDEV = 50 * Math.PI;
         public static final double TRANSLATION_STDEV_ORDER = 2;
