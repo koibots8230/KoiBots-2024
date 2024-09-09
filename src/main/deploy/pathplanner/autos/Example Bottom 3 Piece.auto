@@ -2,22 +2,16 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 0.67,
-      "y": 6.74
+      "x": 1.54107388,
+      "y": 5.553456
     },
-    "rotation": 57.29577951308232
+    "rotation": 1.7650408235118078e-26
   },
   "command": {
     "type": "sequential",
     "data": {
       "commands": [
         {
-          "type": "path",
-          "data": {
-            "pathName": "B2_S2"
-          }
-        },
-        {
           "type": "race",
           "data": {
             "commands": [
@@ -40,17 +34,17 @@
           "type": "parallel",
           "data": {
             "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "S2_N1_S2.1"
-                }
-              },
               {
                 "type": "named",
                 "data": {
                   "name": "Intake"
                 }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "bottom3piece.1"
+                }
               }
             ]
           }
@@ -58,7 +52,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "S2_N1_S2.2"
+            "pathName": "bottom3piece.2"
           }
         },
         {
@@ -85,28 +79,15 @@
           "data": {
             "commands": [
               {
-                "type": "path",
+                "type": "named",
                 "data": {
-                  "pathName": "S2_N5_S2.1"
+                  "name": "Intake"
                 }
               },
               {
-                "type": "sequential",
+                "type": "path",
                 "data": {
-                  "commands": [
-                    {
-                      "type": "wait",
-                      "data": {
-                        "waitTime": 0.75
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "Intake"
-                      }
-                    }
-                  ]
+                  "pathName": "bottom3piece.3"
                 }
               }
             ]
@@ -115,7 +96,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "S2_N5_S2.2"
+            "pathName": "bottom3piece.4"
           }
         },
         {
@@ -142,28 +123,15 @@
           "data": {
             "commands": [
               {
-                "type": "path",
+                "type": "named",
                 "data": {
-                  "pathName": "S2_N6_S2.1"
+                  "name": "Intake"
                 }
               },
               {
-                "type": "sequential",
+                "type": "path",
                 "data": {
-                  "commands": [
-                    {
-                      "type": "wait",
-                      "data": {
-                        "waitTime": 0.75
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "Intake"
-                      }
-                    }
-                  ]
+                  "pathName": "bottom3piece.5"
                 }
               }
             ]
@@ -172,7 +140,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "S2_N6_S2.2"
+            "pathName": "bottom3piece.6"
           }
         },
         {
