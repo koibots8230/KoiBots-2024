@@ -38,7 +38,7 @@ public class SwerveModule {
         speedSetpoint =
                 optimizedSetpoint.speedMetersPerSecond
                         * inputs.turnSetpoint.minus(io.getTurnRawPosition()).getCos();
-                        
+
         io.setTurnPosition(angleSetpoint);
         io.setDriveVelocity(MetersPerSecond.of(speedSetpoint));
         return optimizedSetpoint;

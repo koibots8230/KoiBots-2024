@@ -76,8 +76,7 @@ public class SwerveModuleIOSim implements SwerveModuleIO {
                                 + driveFeedforward.calculate(driveSetpoint.in(MetersPerSecond)));
         driveSim.setInputVoltage(inputs.driveAppliedVoltage.in(Volts));
 
-        inputs.turnPosition =
-                new Rotation2d(turnSim.getAngularPositionRad() % (2 * Math.PI));
+        inputs.turnPosition = new Rotation2d(turnSim.getAngularPositionRad() % (2 * Math.PI));
         inputs.turnVelocity = RadiansPerSecond.of(turnSim.getAngularVelocityRadPerSec());
         inputs.turnCurrent = Amps.of(turnSim.getCurrentDrawAmps());
 
@@ -87,7 +86,7 @@ public class SwerveModuleIOSim implements SwerveModuleIO {
                 Volts.of(
                         turnFeedback.calculate(
                                 inputs.turnPosition.getRadians(), turnSetpoint.getRadians()));
-        //turnSim.setInputVoltage(inputs.turnAppliedVoltage.in(Volts));
+        // turnSim.setInputVoltage(inputs.turnAppliedVoltage.in(Volts));
     }
 
     @Override

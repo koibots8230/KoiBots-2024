@@ -29,7 +29,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -65,8 +64,7 @@ public class RobotContainer {
                 new Shoot(
                         SetpointConstants.SHOOTER_SPEEDS.SPEAKER.topSpeed,
                         SetpointConstants.SHOOTER_SPEEDS.SPEAKER.bottomSpeed));
-        NamedCommands.registerCommand(
-                "Intake", new WaitCommand(0.5));
+        NamedCommands.registerCommand("Intake", new WaitCommand(0.5));
         NamedCommands.registerCommand(
                 "Score_Amp",
                 new Shoot(
@@ -211,8 +209,15 @@ public class RobotContainer {
         alignAmp.onTrue(new Shoot(ShootPosition.AMP));
 
         Trigger printThing = new Trigger(() -> operatorPad.getRawButton(12));
-        printThing.onTrue(new InstantCommand(() -> System.out.println(Math.hypot(Swerve.get().getEstimatedPose().getX() - AlignConstants.AMP_POSITION.getX(),
-                 Swerve.get().getEstimatedPose().getY() - AlignConstants.AMP_POSITION.getY()))));
+        printThing.onTrue(
+                new InstantCommand(
+                        () ->
+                                System.out.println(
+                                        Math.hypot(
+                                                Swerve.get().getEstimatedPose().getX()
+                                                        - AlignConstants.AMP_POSITION.getX(),
+                                                Swerve.get().getEstimatedPose().getY()
+                                                        - AlignConstants.AMP_POSITION.getY()))));
     }
 
     public void configureTestBinds() {
@@ -229,7 +234,8 @@ public class RobotContainer {
 
     public Command getAutonomousRoutine() {
         if (autos.getSelected() != null) {
-            Swerve.get().resetOdometry(PathPlannerAuto.getStaringPoseFromAutoFile(autos.getSelected()));
+            Swerve.get()
+                    .resetOdometry(PathPlannerAuto.getStaringPoseFromAutoFile(autos.getSelected()));
             return AutoBuilder.buildAuto(autos.getSelected());
         } else {
             return new InstantCommand();

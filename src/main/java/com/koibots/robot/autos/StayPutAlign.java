@@ -36,22 +36,28 @@ public class StayPutAlign extends Command {
     }
 
     @Override
-    public void initialize() {
-    }
+    public void initialize() {}
 
     @Override
     public void execute() {
-        Swerve.get().driveRobotRelative(ChassisSpeeds.fromFieldRelativeSpeeds(
-                MetersPerSecond.of(
-                        translationFeedback.calculate(
-                                Swerve.get().getEstimatedPose().getX(), spot.getX())),
-                MetersPerSecond.of(
-                        translationFeedback.calculate(
-                                Swerve.get().getEstimatedPose().getY(), spot.getY())),
-                RadiansPerSecond.of(
-                        rotationFeedback.calculate(
-                                Swerve.get().getEstimatedPose().getRotation().getRadians(),
-                                spot.getRotation().getRadians())),
-                Swerve.get().getGyroAngle()));
+        Swerve.get()
+                .driveRobotRelative(
+                        ChassisSpeeds.fromFieldRelativeSpeeds(
+                                MetersPerSecond.of(
+                                        translationFeedback.calculate(
+                                                Swerve.get().getEstimatedPose().getX(),
+                                                spot.getX())),
+                                MetersPerSecond.of(
+                                        translationFeedback.calculate(
+                                                Swerve.get().getEstimatedPose().getY(),
+                                                spot.getY())),
+                                RadiansPerSecond.of(
+                                        rotationFeedback.calculate(
+                                                Swerve.get()
+                                                        .getEstimatedPose()
+                                                        .getRotation()
+                                                        .getRadians(),
+                                                spot.getRotation().getRadians())),
+                                Swerve.get().getGyroAngle()));
     }
 }
