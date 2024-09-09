@@ -221,7 +221,7 @@ public class Constants {
         private static final Measure<Distance> ROBOT_LENGTH = Inches.of(21.375);
 
         public static final Measure<Velocity<Distance>> MAX_LINEAR_SPEED =
-                MetersPerSecond.of(2);
+                MetersPerSecond.of(4);
         public static final Measure<Velocity<Angle>> MAX_ANGULAR_VELOCITY =
                 RadiansPerSecond.of(2 * PI);
         public static final Measure<Velocity<Velocity<Distance>>> MAX_LINEAR_ACCELERATION =
