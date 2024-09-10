@@ -59,7 +59,7 @@ public class Swerve extends SubsystemBase {
                                 3),
                     };
 
-            gyro = new GyroIONavX();
+            gyro = new GryoIOPigeon();
 
         } else {
             swerveModules =

@@ -38,6 +38,8 @@ public class Constants {
         public static final int SHOOTER_TOP = 11;
         public static final int SHOOTER_BOTTOM = 13;
         public static final int INTAKE = 14;
+        
+        public static final int PIGEON = 10;
 
         public static final int INDEXER_SENSOR = 0;
         public static final int[] TOP_SHOOTER_ENCODER = {1, 2};
