@@ -30,7 +30,6 @@ public class DriveDistance extends Command {
     public DriveDistance(Pose2d goal) {
         leaving = false;
         note = 100;
-        System.out.println(goal);
         endGoal = goal;
 
         addRequirements(Swerve.get());
@@ -108,8 +107,6 @@ public class DriveDistance extends Command {
                 new Rotation2d(
                         endGoal.getX() - Swerve.get().getEstimatedPose().getX(),
                         endGoal.getY() - Swerve.get().getEstimatedPose().getY());
-
-        System.out.println(endGoal);
     }
 
     @Override
@@ -135,9 +132,6 @@ public class DriveDistance extends Command {
                         endGoal.getRotation().getRadians());
 
         angularVelocity *= angularVelocity * angularVelocity;
-
-        System.out.println("Angle Setpoint: " + endGoal.getRotation().getRadians());
-        System.out.println("Velocity Output: " + angularVelocity);
 
         // if (angularVelocity > -0.01 && angularVelocity < 0.01) {
         //     angularVelocity = 0;

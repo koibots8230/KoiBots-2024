@@ -5,24 +5,46 @@ package com.koibots.robot.subsystems.swerve;
 
 import static edu.wpi.first.units.Units.*;
 
+import com.koibots.robot.Constants.ControlConstants;
 import com.koibots.robot.Constants.DeviceIDs;
 import com.koibots.robot.Constants.MotorConstants;
 import com.koibots.robot.Constants.RobotConstants;
 import com.koibots.robot.Constants.SensorConstants;
 import com.revrobotics.AbsoluteEncoder;
+import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkAbsoluteEncoder.Type;
+import com.revrobotics.SparkPIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
-import edu.wpi.first.units.Voltage;
+import edu.wpi.first.units.Velocity;
 
 public class SwerveModuleIOSparkMax implements SwerveModuleIO {
     private final CANSparkMax driveMotor;
     private final CANSparkMax turnMotor;
     private final RelativeEncoder driveEncoder;
     private final AbsoluteEncoder turnEncoder;
+
+    private final SimpleMotorFeedforward turnFF;
+
+    private final TrapezoidProfile turnProfile;
+    private TrapezoidProfile.State turnGoal;
+
+    private TrapezoidProfile.State turnSetpoint;
+
+    private final SparkPIDController turnPID;
+
+    private final SparkPIDController drivePID;
+
+    private Measure<Velocity<Distance>> driveSetpoint;
+
     private Rotation2d chassisAngularOffset;
 
     public SwerveModuleIOSparkMax(int driveId, int turnId) {
@@ -70,19 +92,48 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
         } else if (turnId == DeviceIDs.BACK_LEFT_TURN) {
             chassisAngularOffset = Rotation2d.fromRadians(0);
         } else if (turnId == DeviceIDs.BACK_RIGHT_TURN) {
-            chassisAngularOffset =
-                    Rotation2d.fromRadians(
-                            Math.PI / 2); // Rotation2d.fromDegrees((3 * Math.PI) / 2);
+            chassisAngularOffset = Rotation2d.fromRadians(Math.PI / 2);
         }
+        turnMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 8);
 
         driveEncoder.setPosition(0.0);
         driveEncoder.setAverageDepth(SensorConstants.DRIVE_ENCODER_SAMPLING_DEPTH);
+        driveEncoder.setMeasurementPeriod(16);
+
+        turnPID = turnMotor.getPIDController();
+        turnPID.setP(ControlConstants.TURN_PID_CONSTANTS.kP);
+        turnPID.setI(ControlConstants.TURN_PID_CONSTANTS.kI);
+        turnPID.setD(ControlConstants.TURN_PID_CONSTANTS.kD);
+
+        turnPID.setFeedbackDevice(turnEncoder);
+        turnPID.setPositionPIDWrappingEnabled(true);
+        turnPID.setPositionPIDWrappingMaxInput(Math.PI);
+        turnPID.setPositionPIDWrappingMinInput(-Math.PI);
+
+        turnFF =
+                new SimpleMotorFeedforward(
+                        ControlConstants.TURN_FEEDFORWARD_CONSTANTS.ks,
+                        ControlConstants.TURN_FEEDFORWARD_CONSTANTS.kv);
+
+        turnProfile = new TrapezoidProfile(new Constraints(Math.PI, Math.PI / 2));
+        turnGoal = new TrapezoidProfile.State(turnEncoder.getPosition(), 0);
+        turnSetpoint = new TrapezoidProfile.State(turnEncoder.getPosition(), 0);
+
+        drivePID = driveMotor.getPIDController();
+        drivePID.setP(ControlConstants.DRIVE_PID_CONSTANTS.kP);
+        drivePID.setI(ControlConstants.DRIVE_PID_CONSTANTS.kI);
+        drivePID.setD(ControlConstants.DRIVE_PID_CONSTANTS.kD);
+        drivePID.setFF(ControlConstants.DRIVE_FEEDFORWARD_CONSTANTS.kv);
+
+        driveSetpoint = MetersPerSecond.of(0);
     }
 
     @Override
     public void updateInputs(SwerveModuleInputs inputs) {
         inputs.drivePosition = Meters.of(driveEncoder.getPosition());
         inputs.driveVelocity = MetersPerSecond.of(driveEncoder.getVelocity());
+        inputs.driveSetpoint = driveSetpoint;
+
         inputs.driveAppliedVoltage =
                 Volts.of(driveMotor.getBusVoltage()).times(driveMotor.getAppliedOutput());
         inputs.driveCurrent = Amps.of(driveMotor.getOutputCurrent());
@@ -91,20 +142,36 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
                 Rotation2d.fromRadians(turnEncoder.getPosition())
                         .plus(chassisAngularOffset)
                         .minus(Rotation2d.fromRadians(Math.PI));
-
         inputs.turnVelocity = RadiansPerSecond.of(turnEncoder.getVelocity());
+
         inputs.turnAppliedVoltage =
                 Volts.of(turnMotor.getBusVoltage()).times(turnMotor.getAppliedOutput());
         inputs.turnCurrent = Amps.of(turnMotor.getOutputCurrent());
+
+        turnSetpoint = turnProfile.calculate(0.02, turnSetpoint, turnGoal);
+        inputs.turnSetpoint = Rotation2d.fromRadians(turnGoal.position);
+        turnPID.setReference(
+                turnGoal.position,
+                ControlType.kPosition,
+                0,
+                turnFF.calculate(turnSetpoint.velocity));
     }
 
     @Override
-    public void setDriveVoltage(Measure<Voltage> voltage) {
-        driveMotor.setVoltage(voltage.in(Volts));
+    public void setTurnPosition(Rotation2d position) {
+        turnGoal =
+                new TrapezoidProfile.State(
+                        position.getRadians() + chassisAngularOffset.getRadians(), 0);
     }
 
     @Override
-    public void setTurnVoltage(Measure<Voltage> voltage) {
-        turnMotor.setVoltage(voltage.in(Volts));
+    public void setDriveVelocity(Measure<Velocity<Distance>> velocity) {
+        //driveSetpoint = velocity;
+        //drivePID.setReference(velocity.in(MetersPerSecond), ControlType.kVelocity);
+    }
+
+    @Override
+    public Rotation2d getTurnRawPosition() {
+        return Rotation2d.fromRadians(turnEncoder.getPosition());
     }
 }

@@ -23,6 +23,7 @@ public interface SwerveModuleIO {
     class SwerveModuleInputs {
         public Measure<Distance> drivePosition = Meters.of(0);
         public Measure<Velocity<Distance>> driveVelocity = MetersPerSecond.of(0);
+        public Measure<Velocity<Distance>> driveSetpoint = MetersPerSecond.of(0);
         public Measure<Voltage> driveAppliedVoltage = Volts.of(0);
         public Measure<Current> driveCurrent = Amps.of(0);
 
@@ -30,15 +31,17 @@ public interface SwerveModuleIO {
         public Measure<Velocity<Angle>> turnVelocity = RadiansPerSecond.of(0);
         public Measure<Voltage> turnAppliedVoltage = Volts.of(0);
         public Measure<Current> turnCurrent = Amps.of(0);
-        public double setpoint = 0;
+        public Rotation2d turnSetpoint = new Rotation2d();
     }
 
     /** Updates the set of loggable inputs. */
     default void updateInputs(SwerveModuleInputs inputs) {}
 
-    /** Run the drive motor at the specified voltage. */
-    default void setDriveVoltage(Measure<Voltage> volts) {}
+    default void setTurnPosition(Rotation2d position) {}
 
-    /** Run the turn motor at the specified voltage. */
-    default void setTurnVoltage(Measure<Voltage> volts) {}
+    default void setDriveVelocity(Measure<Velocity<Distance>> velocity) {}
+
+    default Rotation2d getTurnRawPosition() {
+        return new Rotation2d();
+    }
 }

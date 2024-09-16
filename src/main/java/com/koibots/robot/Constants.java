@@ -18,6 +18,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.numbers.*;
 import edu.wpi.first.units.*;
 import java.util.Arrays;
 import java.util.Hashtable;
@@ -37,6 +38,8 @@ public class Constants {
         public static final int SHOOTER_TOP = 11;
         public static final int SHOOTER_BOTTOM = 13;
         public static final int INTAKE = 14;
+        
+        public static final int PIGEON = 10;
 
         public static final int INDEXER_SENSOR = 0;
         public static final int[] TOP_SHOOTER_ENCODER = {1, 2};
@@ -93,11 +96,15 @@ public class Constants {
 
         public static final double DRIVE_TURN_KS = 0.0;
         public static final PIDConstantsIO TURN_PID_CONSTANTS =
-                new PIDConstantsIO(2.078, 0, 0, 35, 0, 0);
+                // new PIDConstantsIO(3.4, 0, 0, 35, 0, 0); // Rubber
+                new PIDConstantsIO(3.5, 0, 0, 35, 0, 0); // TPU
         public static final PIDConstantsIO DRIVE_PID_CONSTANTS =
-                new PIDConstantsIO(5.5208e-10, 0, 0, 40, 0, 0);
+                new PIDConstantsIO(0.2, 0, 0, 40, 0, 0);
         public static final FeedforwardConstantsIO DRIVE_FEEDFORWARD_CONSTANTS =
-                new FeedforwardConstantsIO(0.11386, 2.6819, 0.16507, 0, 2.65, 0);
+                new FeedforwardConstantsIO(0, 0.245, 0, 0, 2.65, 0);
+        public static final FeedforwardConstantsIO TURN_FEEDFORWARD_CONSTANTS =
+                // new FeedforwardConstantsIO(0.2, 0.5, 0, 0, 0, 0); // Rubber
+                new FeedforwardConstantsIO(0.22, 0.5, 0, 0, 0, 0); // TPU
 
         public static final double DEADBAND = 0.025;
 
@@ -143,16 +150,20 @@ public class Constants {
         public static final FeedforwardConstantsIO INDEXER_FEEDFORWARD_CONSTANTS =
                 new FeedforwardConstantsIO(0, 2.4, 0, .0021);
 
-        // =====================Autos=====================
+        // =====================Pathplanner=====================
 
-        public static final PIDConstantsIO VX_CONTROLLER = new PIDConstantsIO(1.5, 0, 0, 0, 0, 0);
-        public static final PIDConstantsIO VY_CONTROLLER = new PIDConstantsIO(0, 0, 0, 0, 0, 0);
-        public static final PIDConstantsIO VTHETA_CONTROLLER = new PIDConstantsIO(0, 0, 0, 0, 0, 0);
+        public static final PIDConstantsIO TRANSLATION_PID_CONSTANTS =
+                new PIDConstantsIO(5.4, 0, 0, 40, 0, 0);
+        public static final PIDConstantsIO ROTATION_PID_CONSTANTS =
+                new PIDConstantsIO(3.5, 0, 0, 30, 0, 0);
 
-        // =====================Auto Align=====================
+        public static final PIDConstantsIO STAY_PUT_TRANSLATION_PID_CONSTANTS =
+                new PIDConstantsIO(4, 0, 0, 3, 0, 0);
+        public static final PIDConstantsIO STAY_PUT_ROTATION_PID_CONSTANTS =
+                new PIDConstantsIO(8, 0, 0, 25, 0, 0);
 
-        public static final Measure<Distance> REPLANNING_ERROR_THRESHOLD = Meters.of(1);
-        public static final Measure<Distance> REPLANNING_ERROR_SPIKE_THRESHOLD = Meters.of(1);
+        public static final Measure<Distance> REPLANNING_ERROR_THRESHOLD = Inches.of(6);
+        public static final Measure<Distance> REPLANNING_ERROR_SPIKE_THRESHOLD = Inches.of(4);
 
         public static final PathConstraints PATH_CONSTRAINTS =
                 new PathConstraints(
@@ -163,15 +174,15 @@ public class Constants {
 
         public static final HolonomicPathFollowerConfig HOLONOMIC_CONFIG =
                 new HolonomicPathFollowerConfig(
-                        DRIVE_PID_CONSTANTS,
-                        TURN_PID_CONSTANTS,
-                        RobotConstants.MAX_LINEAR_SPEED.in(MetersPerSecond),
+                        TRANSLATION_PID_CONSTANTS,
+                        ROTATION_PID_CONSTANTS,
+                        4,
                         Math.sqrt(
                                 Math.pow(RobotConstants.ROBOT_LENGTH.in(Meters), 2)
                                         + Math.pow(RobotConstants.ROBOT_WIDTH.in(Meters), 2)),
                         new ReplanningConfig(
                                 false,
-                                true,
+                                false,
                                 REPLANNING_ERROR_THRESHOLD.in(Meters),
                                 REPLANNING_ERROR_SPIKE_THRESHOLD.in(Meters)));
 
@@ -187,7 +198,7 @@ public class Constants {
 
         public enum SHOOTER_SPEEDS {
             SPEAKER(Arrays.asList(RPM.of(3850), RPM.of(3850))),
-            AMP(Arrays.asList(RPM.of(500), RPM.of(2000))),
+            AMP(Arrays.asList(RPM.of(300), RPM.of(1000))),
             INTAKE(Arrays.asList(RPM.of(-800), RPM.of(-602))),
             REVERSE(Arrays.asList(RPM.of(-400), RPM.of(-400))),
             IDLE(Arrays.asList(RPM.of(500), RPM.of(500)));
@@ -212,11 +223,11 @@ public class Constants {
         private static final Measure<Distance> ROBOT_LENGTH = Inches.of(21.375);
 
         public static final Measure<Velocity<Distance>> MAX_LINEAR_SPEED =
-                MetersPerSecond.of(4.125);
+                MetersPerSecond.of(4);
         public static final Measure<Velocity<Angle>> MAX_ANGULAR_VELOCITY =
                 RadiansPerSecond.of(2 * PI);
         public static final Measure<Velocity<Velocity<Distance>>> MAX_LINEAR_ACCELERATION =
-                MetersPerSecondPerSecond.of(4);
+                MetersPerSecondPerSecond.of(2);
         public static final Measure<Velocity<Velocity<Angle>>> MAX_ANGULAR_ACCELERATION =
                 RadiansPerSecond.of(4 * Math.PI).per(Second);
 
@@ -226,12 +237,12 @@ public class Constants {
     }
 
     public static class AlignConstants {
-        public static final Pose2d AMP_POSITION = new Pose2d();
+        public static final Pose2d AMP_POSITION =
+                new Pose2d(1.88, 7.73, Rotation2d.fromRadians(-Math.PI / 2));
 
-        public static final Translation2d ALLOWED_DISTANCE_FROM_AMP = new Translation2d(2, 2);
+        public static final Measure<Distance> ALLOWED_DISTANCE_FROM_AMP = Meters.of(2);
 
-        public static final List<Measure<Distance>> SHOOT_DISTANCES_METERS =
-                Arrays.asList(Meters.of(4.5));
+        public static final Measure<Distance> SHOOT_DISTANCES_METERS = Meters.of(1.541018);
         public static final Pose2d SPEAKER_POSITION = new Pose2d();
 
         public static final Translation2d ALLOWED_DISTANCE_FROM_SHOOT = new Translation2d(2, 2);
@@ -240,23 +251,29 @@ public class Constants {
     }
 
     public static class VisionConstants {
+        public static final int ACTIVE_CAMERAS = 3;
+
         public static final Pose2d[] CAMERA_POSITIONS = {
-            new Pose2d(0, 0, new Rotation2d(Math.toRadians(0))),
-            new Pose2d(0, 0, new Rotation2d(Math.toRadians(90))),
-            new Pose2d(0, 0, new Rotation2d(Math.toRadians(180))),
-            new Pose2d(0, 0, new Rotation2d(Math.toRadians(270))),
-        }; // x is left, y is forward, counterclockwise on rotation
+            new Pose2d(-0.1524, -0.26035, new Rotation2d(Math.toRadians(90))),
+            new Pose2d(-0.1651, 0.0254, new Rotation2d(Math.toRadians(180))),
+            new Pose2d(-0.1524, 0.26035, new Rotation2d(Math.toRadians(270)))
+        }; // x is forward, y is left, counterclockwise on rotation
 
         public static final String[][] TOPIC_NAMES = {
             {"Cam1Tvec", "Cam1Rvec", "Cam1Ids"},
             {"Cam2Tvec", "Cam2Rvec", "Cam2Ids"},
-            {"Cam3Tvec", "Cam3Rvec", "Cam3Ids"},
-            {"Cam4Tvec", "Cam4Rvec", "Cam4Ids"}
+            {"Cam3Tvec", "Cam3Rvec", "Cam3Ids"}
         };
-        public static final double[] VECTOR_DEFAULT_VALUE = {0, 0, 0};
+
+        public static final double[] VECTOR_DEFAULT_VALUE = {0};
         public static final int ID_DEFAULT_VALUE = 0;
 
-        public static final Measure<Distance> MAX_MEASUREMENT_DIFFERENCE = Meters.of(1);
+        public static final Measure<Distance> MAX_MEASUREMENT_DIFFERENCE = Meters.of(1.5);
+        public static final Rotation2d MAX_ANGLE_DIFFERENCE = Rotation2d.fromDegrees(10);
+
+        public static final double ROTATION_STDEV = 50 * Math.PI;
+        public static final double TRANSLATION_STDEV_ORDER = 2;
+        public static final double TRANSLATION_STDEV_SCALAR = 2;
     }
 
     public static class AutoConstants {

@@ -3,11 +3,13 @@
 
 package com.koibots.robot.subsystems.swerve;
 
+import static edu.wpi.first.units.Units.*;
+
 import com.koibots.robot.Constants.ControlConstants;
 import com.koibots.robot.Constants.DeviceIDs;
 import com.koibots.robot.Constants.RobotConstants;
 import com.koibots.robot.Robot;
-import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -15,10 +17,14 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Time;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Notifier;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.util.List;
 import org.littletonrobotics.junction.Logger;
 
 public class Swerve extends SubsystemBase {
@@ -27,11 +33,9 @@ public class Swerve extends SubsystemBase {
     GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
     SwerveDrivePoseEstimator odometry;
 
-    public PIDController xController;
-    public PIDController yController;
-    public PIDController thetaController;
+    Rotation2d[] stopAngles;
 
-    // private Field2d field = new Field2d();
+    private Pose2d pathingGoal;
 
     public Swerve() {
         if (Robot.isReal()) {
@@ -55,7 +59,7 @@ public class Swerve extends SubsystemBase {
                                 3),
                     };
 
-            gyro = new GyroIONavX();
+            gyro = new GryoIOPigeon();
 
         } else {
             swerveModules =
@@ -87,26 +91,6 @@ public class Swerve extends SubsystemBase {
                         })) {
             odometryUpdater.startPeriodic(1.0 / 200); // Run at 200hz
         }
-
-        xController =
-                new PIDController(
-                        ControlConstants.VX_CONTROLLER.kP,
-                        ControlConstants.VX_CONTROLLER.kI,
-                        ControlConstants.VX_CONTROLLER.kD);
-        yController =
-                new PIDController(
-                        ControlConstants.VY_CONTROLLER.kP,
-                        ControlConstants.VY_CONTROLLER.kI,
-                        ControlConstants.VY_CONTROLLER.kD);
-        thetaController =
-                new PIDController(
-                        ControlConstants.VTHETA_CONTROLLER.kP,
-                        ControlConstants.VTHETA_CONTROLLER.kI,
-                        ControlConstants.VTHETA_CONTROLLER.kD);
-
-        SmartDashboard.putData("X Controller", xController);
-        SmartDashboard.putData("Y Controller", yController);
-        SmartDashboard.putData("Theta Controller", thetaController);
     }
 
     @Override
@@ -124,24 +108,21 @@ public class Swerve extends SubsystemBase {
         swerveModules[2].periodic();
         swerveModules[3].periodic();
 
-        double[] statesDegrees = new double[8];
         double[] statesRadians = new double[8];
         for (int i = 0; i < 4; i++) {
-            statesDegrees[i * 2] = swerveModules[i].getAngle().getDegrees();
-            statesDegrees[(i * 2) + 1] = swerveModules[i].getVelocityMetersPerSec();
             statesRadians[i * 2] = swerveModules[i].getAngle().getRadians();
             statesRadians[(i * 2) + 1] = swerveModules[i].getVelocityMetersPerSec();
         }
 
-        Logger.recordOutput("SwerveStates/Measured", statesDegrees);
         Logger.recordOutput("SwerveStates/Measured", statesRadians);
 
         // field.setRobotPose(getEstimatedPose());
         // SmartDashboard.putData(field);
     }
 
-    public void addVisionMeasurement(Pose2d measurement, double timestamp) {
-        odometry.addVisionMeasurement(measurement, timestamp);
+    public void addVisionMeasurement(
+            Pose2d measurement, Measure<Time> timestamp, Matrix<N3, N1> stdevs) {
+        odometry.addVisionMeasurement(measurement, timestamp.in(Seconds), stdevs);
     }
 
     public void zeroGyro() {
@@ -161,10 +142,21 @@ public class Swerve extends SubsystemBase {
                 && speeds.vyMetersPerSecond == 0.0
                 && speeds.omegaRadiansPerSecond == 0) {
             var currentStates = this.getModuleStates();
-            targetModuleStates[0] = new SwerveModuleState(0, currentStates[0].angle);
-            targetModuleStates[1] = new SwerveModuleState(0, currentStates[1].angle);
-            targetModuleStates[2] = new SwerveModuleState(0, currentStates[2].angle);
-            targetModuleStates[3] = new SwerveModuleState(0, currentStates[3].angle);
+            if (stopAngles == null) {
+                stopAngles =
+                        new Rotation2d[] {
+                            currentStates[0].angle,
+                            currentStates[1].angle,
+                            currentStates[2].angle,
+                            currentStates[3].angle
+                        };
+            }
+            targetModuleStates[0] = new SwerveModuleState(0, stopAngles[0]);
+            targetModuleStates[1] = new SwerveModuleState(0, stopAngles[1]);
+            targetModuleStates[2] = new SwerveModuleState(0, stopAngles[2]);
+            targetModuleStates[3] = new SwerveModuleState(0, stopAngles[3]);
+        } else {
+            stopAngles = null;
         }
 
         this.setModuleStates(targetModuleStates);
@@ -284,5 +276,13 @@ public class Swerve extends SubsystemBase {
                 "Back Right Velocity", () -> measuredStates[3].speedMetersPerSecond, null);
 
         builder.addDoubleProperty("Robot Angle", () -> gyroInputs.yawPosition.getDegrees(), null);
+    }
+
+    public void setPathingGoal(Pose2d goal) {
+        pathingGoal = goal;
+    }
+
+    public Pose2d getPathingGoal() {
+        return pathingGoal;
     }
 }
