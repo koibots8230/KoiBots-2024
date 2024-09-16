@@ -166,8 +166,8 @@ public class SwerveModuleIOSparkMax implements SwerveModuleIO {
 
     @Override
     public void setDriveVelocity(Measure<Velocity<Distance>> velocity) {
-        driveSetpoint = velocity;
-        drivePID.setReference(velocity.in(MetersPerSecond), ControlType.kVelocity);
+        //driveSetpoint = velocity;
+        //drivePID.setReference(velocity.in(MetersPerSecond), ControlType.kVelocity);
     }
 
     @Override
