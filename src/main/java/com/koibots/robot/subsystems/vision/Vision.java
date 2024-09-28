@@ -136,6 +136,7 @@ public class Vision extends SubsystemBase {
             if (tvec.length == 0 || rvec.length == 0 || ids.length == 0) {
                 continue;
             } else if (tvec[0].value.length == 1) {
+                 System.err.println("Too short2");
                 continue;
             }
             while (!(tvec.length == rvec.length && rvec.length == ids.length)) {
@@ -156,6 +157,7 @@ public class Vision extends SubsystemBase {
                     Pose2d pose =
                             translateToFieldPose(
                                     tvec[b].value, rvec[b].value, (int) ids[b].value, a);
+                    System.out.println(pose);
                     // spotless:off
                     if (pose.getY() > 0
                             && pose.getY() < layout.getFieldWidth()
@@ -165,8 +167,7 @@ public class Vision extends SubsystemBase {
                                     : Math.sqrt(
                                         Math.pow(pose.getX() - Swerve.get().getEstimatedPose().getX(), 2)
                                             + Math.pow(pose.getY() - Swerve.get().getEstimatedPose().getY(), 2))
-                                    < VisionConstants.MAX_MEASUREMENT_DIFFERENCE.in(Meters))
-                            && Math.abs(pose.getRotation().getRadians() - Swerve.get().getGyroAngle().getRadians()) < VisionConstants.MAX_ANGLE_DIFFERENCE.getRadians()) { //TODO: test this with robot movement (is it too low?)
+                                    < VisionConstants.MAX_MEASUREMENT_DIFFERENCE.in(Meters))) { //TODO: test this with robot movement (is it too low?)
                         // spotless:on
                         Logger.recordOutput("Raw Vision", pose);
                         Swerve.get()

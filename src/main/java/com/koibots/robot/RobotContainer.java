@@ -207,6 +207,11 @@ public class RobotContainer {
                                 () -> Shooter.get().setVelocity(RPM.of(0), RPM.of(0)),
                                 Shooter.get())));
 
+        Trigger shoottest = new Trigger(() -> operatorPad.getRawButton(10));
+        shoottest.onTrue(new Shoot(
+                        SetpointConstants.SHOOTER_SPEEDS.SPEAKER.topSpeed,
+                        SetpointConstants.SHOOTER_SPEEDS.SPEAKER.bottomSpeed));
+
         Trigger alignAmp = new Trigger(() -> operatorPad.getRawButton(11));
         alignAmp.onTrue(new Shoot(ShootPosition.AMP));
 

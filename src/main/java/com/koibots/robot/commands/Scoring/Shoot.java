@@ -22,6 +22,7 @@ import edu.wpi.first.units.*;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 
@@ -130,13 +131,16 @@ public class Shoot extends SequentialCommandGroup {
     public Shoot(Measure<Velocity<Angle>> topSpeed, Measure<Velocity<Angle>> bottomSpeed) {
             addCommands(
                     new SpinUpShooter(topSpeed, bottomSpeed),
+                    new PrintCommand("wating"),
                     new WaitCommand(0.5),
+                    new PrintCommand("shoot"),
                     new InstantCommand(
                             () ->
                                     Indexer.get()
                                             .setVelocity(
                                                     SetpointConstants.SHOOTER_INDEXER_SPEED),
                             Indexer.get()),
+                    new PrintCommand("wait 2"),
                     new WaitCommand(1),
                     new ParallelCommandGroup(
                             new InstantCommand(
