@@ -18,7 +18,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.numbers.*;
 import edu.wpi.first.units.*;
 import java.util.Arrays;
 import java.util.Hashtable;
@@ -37,7 +36,8 @@ public class Constants {
         public static final int INDEXER = 9;
         public static final int SHOOTER_TOP = 11;
         public static final int SHOOTER_BOTTOM = 13;
-        public static final int INTAKE = 14;
+        public static final int LEFT_INTAKE = 14;
+        public static final int RIGHT_INTAKE = 15;
         
         public static final int PIGEON = 10;
 

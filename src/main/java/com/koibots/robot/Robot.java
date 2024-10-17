@@ -27,7 +27,7 @@ public class Robot extends LoggedRobot {
     @Override
     public void robotInit() {
         Logger.recordMetadata("RobotName", "Swerve Chassis");
-        Logger.addDataReceiver(new WPILOGWriter());
+        //Logger.addDataReceiver(new WPILOGWriter("/root/logs"));
 
         // CameraServer.startAutomaticCapture();
 

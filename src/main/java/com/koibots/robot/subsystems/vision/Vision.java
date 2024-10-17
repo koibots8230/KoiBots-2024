@@ -87,7 +87,7 @@ public class Vision extends SubsystemBase {
                 count++;
             }
         }
-        if (tagId == 14) {tagId = 15;} //TODO: Remove
+        
         double hypotenuse = Math.hypot(translation[0], translation[2]);
 
         double hypangle =

@@ -13,10 +13,14 @@ public interface IntakeIO {
     @AutoLog
     class IntakeIOInputs {
         public double setpoint = 0;
-        public double velocity = 0;
+        public double leftVelocity = 0;
+        public double rightVelocity = 0;
 
-        public Measure<Current> current = Amps.of(0);
-        public Measure<Voltage> voltage = Volts.of(0);
+        public Measure<Current> leftCurrent = Amps.of(0);
+        public Measure<Voltage> leftVoltage = Volts.of(0);
+
+        public Measure<Current> rightCurrent = Amps.of(0);
+        public Measure<Voltage> rightVoltage = Volts.of(0);
     }
 
     /* Updates the set of loggable inputs. */

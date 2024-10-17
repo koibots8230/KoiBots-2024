@@ -6,15 +6,12 @@ package com.koibots.robot.commands.Scoring;
 import static com.koibots.robot.subsystems.Subsystems.*;
 import static edu.wpi.first.units.Units.*;
 
-import java.nio.file.Path;
-
 import com.koibots.robot.Constants.*;
 import com.koibots.robot.autos.StayPut;
 import com.koibots.lib.util.ShootPosition;
 import com.koibots.robot.RobotContainer;
 import com.koibots.robot.commands.Shooter.SpinUpShooter;
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.path.PathPlannerPath;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;

@@ -5,7 +5,7 @@ package com.koibots.robot.subsystems.intake;
 
 import static edu.wpi.first.units.Units.*;
 
-import com.koibots.robot.Constants;
+import com.koibots.robot.Constants.DeviceIDs;
 import com.koibots.robot.Constants.MotorConstants;
 import com.koibots.robot.Constants.RobotConstants;
 import com.revrobotics.CANSparkLowLevel.MotorType;
@@ -15,37 +15,52 @@ import edu.wpi.first.units.*;
 
 public class IntakeIOSparkMax implements IntakeIO {
 
-    private final CANSparkMax motor;
+    private final CANSparkMax leftMotor;
+    private final CANSparkMax rightMotor;
     private final RelativeEncoder encoder;
 
     public IntakeIOSparkMax() {
 
-        motor = new CANSparkMax(Constants.DeviceIDs.INTAKE, MotorType.kBrushless);
+        leftMotor = new CANSparkMax(DeviceIDs.LEFT_INTAKE, MotorType.kBrushless);
 
-        motor.restoreFactoryDefaults();
+        leftMotor.restoreFactoryDefaults();
 
-        motor.setSmartCurrentLimit(MotorConstants.INTAKE.currentLimit);
-        motor.enableVoltageCompensation(RobotConstants.NOMINAL_VOLTAGE.in(Volts));
+        leftMotor.setSmartCurrentLimit(MotorConstants.INTAKE.currentLimit);
+        leftMotor.enableVoltageCompensation(RobotConstants.NOMINAL_VOLTAGE.in(Volts));
 
-        motor.setInverted(MotorConstants.INTAKE.inverted);
+        leftMotor.setInverted(MotorConstants.INTAKE.inverted);
 
-        motor.setIdleMode(MotorConstants.INTAKE.idleMode);
+        leftMotor.setIdleMode(MotorConstants.INTAKE.idleMode);
 
-        motor.setCANTimeout((int) MotorConstants.CAN_TIMEOUT.in(Milliseconds));
+        leftMotor.setCANTimeout((int) MotorConstants.CAN_TIMEOUT.in(Milliseconds));
 
-        encoder = motor.getEncoder();
+        rightMotor = new CANSparkMax(DeviceIDs.RIGHT_INTAKE, MotorType.kBrushless);
+
+        rightMotor.setIdleMode(MotorConstants.INTAKE.idleMode);
+
+        rightMotor.setCANTimeout((int) MotorConstants.CAN_TIMEOUT.in(Milliseconds));
+
+        rightMotor.follow(leftMotor, true);
+
+        encoder = leftMotor.getEncoder();
     }
 
     @Override
     public void updateInputs(IntakeIOInputs inputs) {
-        inputs.velocity = encoder.getVelocity();
+        inputs.leftVelocity = encoder.getVelocity();
 
-        inputs.current = Amps.of(motor.getOutputCurrent());
-        inputs.voltage = Volts.of(motor.getBusVoltage()).times(motor.getAppliedOutput());
+        inputs.leftCurrent = Amps.of(leftMotor.getOutputCurrent());
+        inputs.leftVoltage = Volts.of(leftMotor.getBusVoltage()).times(leftMotor.getAppliedOutput());
+
+        inputs.rightVelocity = encoder.getVelocity();
+
+        inputs.rightCurrent = Amps.of(rightMotor.getOutputCurrent());
+        inputs.rightVoltage = Volts.of(rightMotor.getBusVoltage()).times(rightMotor.getAppliedOutput());
     }
 
     @Override
     public void setVoltage(Measure<Voltage> volts) {
-        motor.setVoltage(volts.in(Volts));
+        leftMotor.setVoltage(volts.in(Volts));
+        rightMotor.setVoltage(volts.in(Volts));
     }
 }
