@@ -16,6 +16,7 @@ import com.koibots.robot.commands.Scoring.FeedNote;
 import com.koibots.robot.commands.Scoring.Shoot;
 import com.koibots.robot.commands.Shooter.SpinUpShooter;
 import com.koibots.robot.commands.Swerve.FieldOrientedDrive;
+import com.koibots.robot.commands.Swerve.RobotOrientedDrive;
 import com.koibots.robot.commands.Swerve.TestDrive;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
@@ -96,56 +97,34 @@ public class RobotContainer {
     public void configureButtonBindings() {
         Swerve.get()
                 .setDefaultCommand(
-                        new FieldOrientedDrive(
+                        new RobotOrientedDrive(
                                 () -> -driveController.getLeftY(),
                                 () -> -driveController.getLeftX(),
                                 () -> -driveController.getRightX(),
                                 () -> driveController.getPOV(),
                                 () -> driveController.getB()));
 
-        Trigger zero = new Trigger(() -> driveController.getA());
-        zero.onTrue(new InstantCommand(() -> Swerve.get().zeroGyro()));
 
-        Trigger intake = new Trigger(() -> driveController.getRightTrigger() > 0.15);
-        intake.onTrue(new IntakeCommand());
-        intake.onFalse(
-                new ParallelCommandGroup(
-                        new InstantCommand(() -> Intake.get().setVelocity(RPM.of(0)), Intake.get()),
-                        new InstantCommand(
-                                () -> Indexer.get().setVelocity(RPM.of(0)), Indexer.get()),
-                        new InstantCommand(() -> RobotContainer.rumbleController(0))));
+        // Trigger intake = new Trigger(() -> driveController.getRightTrigger() > 0.15);
+        // intake.onTrue(new IntakeCommand());
+        // intake.onFalse(
+        //         new ParallelCommandGroup(
+        //                 new InstantCommand(() -> Intake.get().setVelocity(RPM.of(0)), Intake.get()),
+        //                 new InstantCommand(
+        //                         () -> Indexer.get().setVelocity(RPM.of(0)), Indexer.get()),
+        //                 new InstantCommand(() -> RobotContainer.rumbleController(0))));
 
-        Trigger invertDriveX = new Trigger(() -> driveController.getY());
-        invertDriveX.onTrue(new InstantCommand(() -> driveController.setInvertLeftX()));
-
-        Trigger spinUpSpeaker = new Trigger(() -> operatorPad.getRawButton(6));
-        spinUpSpeaker.onTrue(
-                new SpinUpShooter(
-                        SetpointConstants.SHOOTER_SPEEDS.SPEAKER.topSpeed,
-                        SetpointConstants.SHOOTER_SPEEDS.SPEAKER.bottomSpeed));
-        spinUpSpeaker.onFalse(
-                new ParallelCommandGroup(
+        Trigger shootAmp = new Trigger(() -> driveController.getLeftTrigger() > 0.15);
+        shootAmp.onTrue(new Shoot(SetpointConstants.SHOOTER_SPEEDS.AMP.topSpeed, SetpointConstants.SHOOTER_SPEEDS.AMP.bottomSpeed));
+        shootAmp.onFalse(
+            new ParallelCommandGroup(
                         new InstantCommand(
                                 () -> Shooter.get().setVelocity(RPM.of(0), RPM.of(0)),
-                                Shooter.get())));
+                                Shooter.get()),
+            new InstantCommand(() -> Indexer.get().setVelocity(RPM.of(0)), Indexer.get())           
+        ));
 
-        Trigger spinUpAmp = new Trigger(() -> operatorPad.getRawButton(5));
-        spinUpAmp.onTrue(
-                new SpinUpShooter(
-                        SetpointConstants.SHOOTER_SPEEDS.AMP.topSpeed,
-                        SetpointConstants.SHOOTER_SPEEDS.AMP.bottomSpeed));
-        spinUpAmp.onFalse(
-                new ParallelCommandGroup(
-                        new InstantCommand(
-                                () -> Shooter.get().setVelocity(RPM.of(0), RPM.of(0)),
-                                Shooter.get())));
-
-        Trigger feedNote = new Trigger(() -> operatorPad.getRawButton(7));
-        feedNote.onTrue(new FeedNote());
-        feedNote.onFalse(
-                new InstantCommand(() -> Indexer.get().setVelocity(RPM.of(0)), Indexer.get()));
-
-        Trigger intakeShooter = new Trigger(() -> driveController.getRightBumper());
+        Trigger intakeShooter = new Trigger(() -> driveController.getRightTrigger() > 0.15);
         intakeShooter.onTrue(
                 new ParallelRaceGroup(
                         new StartEndCommand(
@@ -169,54 +148,6 @@ public class RobotContainer {
                         new InstantCommand(
                                 () -> Indexer.get().setVelocity(RPM.of(0)), Indexer.get()),
                         new InstantCommand(() -> RobotContainer.rumbleController(0))));
-
-        Trigger reverse = new Trigger(() -> operatorPad.getRawButton(3));
-        reverse.onTrue(
-                new ParallelCommandGroup(
-                        new InstantCommand(
-                                () ->
-                                        Intake.get()
-                                                .setVelocity(
-                                                        SetpointConstants.INTAKE_REVERSE_SPEED),
-                                Intake.get()),
-                        new InstantCommand(
-                                () ->
-                                        Indexer.get()
-                                                .setVelocity(
-                                                        SetpointConstants.INTAKE_INDEXER_SPEED
-                                                                .times(-1)),
-                                Indexer.get()),
-                        new InstantCommand(
-                                () ->
-                                        Shooter.get()
-                                                .setVelocity(
-                                                        SetpointConstants.SHOOTER_SPEEDS
-                                                                .REVERSE
-                                                                .topSpeed,
-                                                        SetpointConstants.SHOOTER_SPEEDS
-                                                                .REVERSE
-                                                                .topSpeed),
-                                Shooter.get())));
-        reverse.onFalse(
-                new ParallelCommandGroup(
-                        new InstantCommand(() -> Intake.get().setVelocity(RPM.of(0)), Intake.get()),
-                        new InstantCommand(
-                                () -> Indexer.get().setVelocity(RPM.of(0)), Indexer.get()),
-                        new InstantCommand(
-                                () -> Shooter.get().setVelocity(RPM.of(0), RPM.of(0)),
-                                Shooter.get())));
-
-        Trigger shoottest = new Trigger(() -> operatorPad.getRawButton(10));
-        shoottest.onTrue(new Shoot(
-                        SetpointConstants.SHOOTER_SPEEDS.SPEAKER.topSpeed,
-                        SetpointConstants.SHOOTER_SPEEDS.SPEAKER.bottomSpeed));
-
-        Trigger alignAmp = new Trigger(() -> operatorPad.getRawButton(11));
-        alignAmp.onTrue(new Shoot(ShootPosition.AMP));
-
-        Trigger printThing = new Trigger(() -> operatorPad.getRawButton(12));
-        printThing.onTrue(new InstantCommand(() -> System.out.println(Math.hypot(Swerve.get().getEstimatedPose().getX() - AlignConstants.AMP_POSITION.getX(),
-                 Swerve.get().getEstimatedPose().getY() - AlignConstants.AMP_POSITION.getY()))));
     }
 
     public void configureTestBinds() {
